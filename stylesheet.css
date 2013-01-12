@@ -1,0 +1,16 @@
+
+.slingshot_table {
+    width: 100px;
+    text-align: center;
+    border-left: 15px;
+    border-right: 15px;
+    border-bottom: 15px;
+    border-top: 5px;
+
+}
+
+.slingshot_apps {
+
+    min-width: 520px;
+    min-height: 470px;
+}
