@@ -1,5 +1,14 @@
 /* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
 
+/***************************************************
+ *           SlingShot for Gnome Shell             *
+ *                                                 *
+ * A clone of SlingShot launcher from ElementaryOS *
+ *                                                 *
+ * Code based on Applications Menu, from gcampax   *
+ *                                                 *
+ ***************************************************/
+
 const ShellVersion = imports.misc.config.PACKAGE_VERSION.split(".");
 const Clutter = imports.gi.Clutter;
 const GMenu = imports.gi.GMenu;
