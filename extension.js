@@ -12,6 +12,7 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
 const ICON_SIZE = 64;
+const ICONS_PER_PAGE = 12;
 
 let main_container;
 let class_container;
@@ -56,7 +57,6 @@ const ApplicationsButton = new Lang.Class({
 
     destroy: function() {
         this._appSys.disconnect(this._installedChangedId);
-
         this.parent();
     },
 
@@ -78,9 +78,6 @@ const ApplicationsButton = new Lang.Class({
 
     },
 
-    // Recursively load a GMenuTreeDirectory
-    // (taken from js/ui/appDisplay.js in core shell)
-
     _loadCategory: function(container,dir, menu) {
 
         this.posx=0;
@@ -93,8 +90,8 @@ const ApplicationsButton = new Lang.Class({
         app_list.sort(this._sortApps);
 
         var counter=0;
-        var minimum_counter=current_page_visible_in_menu*12;
-        var maximum_counter=(current_page_visible_in_menu+1)*12;
+        var minimum_counter=current_page_visible_in_menu*ICONS_PER_PAGE;
+        var maximum_counter=(current_page_visible_in_menu+1)*ICONS_PER_PAGE;
 
         for (var item in app_list) {
             counter+=1;
@@ -121,11 +118,10 @@ const ApplicationsButton = new Lang.Class({
             }
         }
 
-
-        if (this.icon_counter>12) { // there are several pages
+        if (this.icon_counter>ICONS_PER_PAGE) {
             pages_visible_in_menu=0;
             var pages=new St.BoxLayout({vertical: false});
-            for (var i=0;i<=(this.icon_counter/12);i++) {
+            for (var i=0;i<=(this.icon_counter/ICONS_PER_PAGE);i++) {
                 let clase='';
                 if (i==current_page_visible_in_menu) {
                     clase='active';
@@ -133,7 +129,6 @@ const ApplicationsButton = new Lang.Class({
                 let texto=(i+1).toString();
                 let page_label = new St.Label({text: texto,style_class:'popup-menu-item',pseudo_class:clase, reactive: true});
 
-                page_label.father=this;
                 page_label._page_assigned=i;
                 page_label._custom_event_id=page_label.connect('button-release-event',Lang.bind(this,this._onPageClick));
                 page_label._custom_destroy_id=page_label.connect('destroy',Lang.bind(this,this._onDestroyActor));
@@ -145,6 +140,9 @@ const ApplicationsButton = new Lang.Class({
             pages_visible_in_menu=1;
         }
     },
+
+    // Recursively load a GMenuTreeDirectory
+    // (taken from js/ui/appDisplay.js in core shell)
 
     _loadCategory2: function(container,dir, menu,app_list) {
         var iter = dir.iter();
@@ -205,7 +203,7 @@ const ApplicationsButton = new Lang.Class({
         }
 
         if (pages_visible_in_menu>1) {
-            global_container._custom_event_id=global_container.connect('scroll-event', Lang.bind(this,this._onScroll));
+            global_container._custom_event_id=global_container.connect('scroll-event', Lang.bind(this,this._onScrollWheel));
             global_container._custom_destroy_id=global_container.connect('destroy',Lang.bind(this,this._onDestroyActor));
         }
 
@@ -214,7 +212,7 @@ const ApplicationsButton = new Lang.Class({
         this.menu.addMenuItem(ppal);
     },
 
-    _onScroll : function(actor,event) {
+    _onScrollWheel : function(actor,event) {
         let direction = event.get_scroll_direction();
         if ((direction == Clutter.ScrollDirection.DOWN) && (current_page_visible_in_menu<(pages_visible_in_menu-1))) {
             current_page_visible_in_menu+=1;
@@ -233,7 +231,12 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onAppClick : function(actor,event) {
-        actor._app.activate_full(-1,event.get_time());
+/*      This is a launcher, so we create a new window; if we want
+        to go to the current window, we should use
+
+        actor._app.activate_full(-1,event.get_time()); */
+
+        actor._app.open_new_window(-1);
         this.menu.close();
     },
 
@@ -242,7 +245,7 @@ const ApplicationsButton = new Lang.Class({
         this._display();
     },
 
-    _onDestroyActor : function(actor) {
+    _onDestroyActor : function(actor,event) {
         actor.disconnect(actor._custom_event_id);
         actor.disconnect(actor._custom_destroy_id);
     }
@@ -252,6 +255,8 @@ const ApplicationsButton = new Lang.Class({
 let SlingShotButton;
 
 function enable() {
+    current_page_visible_in_menu=0;
+    current_selection='';
     SlingShotButton = new ApplicationsButton();
     Main.panel.addToStatusArea('slingshot-menu', SlingShotButton, 0, 'left');
 }
@@ -261,7 +266,6 @@ function disable() {
 }
 
 function init() {
-    current_selection='';
-    current_page_visible_in_menu=0;
+    // Nothing to do here
 }
 
