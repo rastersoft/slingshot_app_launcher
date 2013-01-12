@@ -5,6 +5,9 @@
  *                                                 *
  * A clone of SlingShot launcher from ElementaryOS *
  *                                                 *
+ * Created by rastersoft, and distributed under    *
+ * GPLv2 or later license.                         *
+ *                                                 *
  * Code based on Applications Menu, from gcampax   *
  *                                                 *
  ***************************************************/
