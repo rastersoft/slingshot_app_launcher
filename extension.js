@@ -101,7 +101,7 @@ const ApplicationsButton = new Lang.Class({
             if ((counter>minimum_counter)&&(counter<=maximum_counter)) {
                 let app=app_list[item];
                 let icon = app.create_icon_texture(ICON_SIZE);
-                let texto = new St.Label({text:app.get_name(), style_class: "slingshot_table"});
+                let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table'});
                 let container2=new St.BoxLayout({vertical: true, reactive: true});
                 texto.clutter_text.line_wrap_mode = Pango.WrapMode.WORD;
                 texto.clutter_text.line_wrap = true;
@@ -126,16 +126,16 @@ const ApplicationsButton = new Lang.Class({
             pages_visible_in_menu=0;
             var pages=new St.BoxLayout({vertical: false});
             for (var i=0;i<=(this.icon_counter/12);i++) {
-                let clase="";
+                let clase='';
                 if (i==current_page_visible_in_menu) {
-                    clase="active";
+                    clase='active';
                 }
                 let texto=(i+1).toString();
-                let page_label = new St.Label({text: texto,style_class:"popup-menu-item",pseudo_class:clase, reactive: true});
+                let page_label = new St.Label({text: texto,style_class:'popup-menu-item',pseudo_class:clase, reactive: true});
 
                 page_label.father=this;
                 page_label._page_assigned=i;
-                page_label._custom_event_id=page_label.connect("button-release-event",Lang.bind(this,this._onPageClick));
+                page_label._custom_event_id=page_label.connect('button-release-event',Lang.bind(this,this._onPageClick));
                 page_label._custom_destroy_id=page_label.connect('destroy',Lang.bind(this,this._onDestroyActor));
                 pages.add(page_label, {y_align:St.Align.END});
                 pages_visible_in_menu+=1;
@@ -167,7 +167,7 @@ const ApplicationsButton = new Lang.Class({
     _display : function() {
         main_container = new St.BoxLayout({vertical: false});
         class_container = new St.BoxLayout({vertical: true});
-        global_container = new St.Table({style_class:"slingshot_apps", homogeneous: false, reactive: true});
+        global_container = new St.Table({style_class:'slingshot_apps', homogeneous: false, reactive: true});
         icons_container = new St.Table({ homogeneous: false});
         main_container.add(class_container);
         global_container.add(icons_container, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
@@ -182,17 +182,17 @@ const ApplicationsButton = new Lang.Class({
             if (nextType == GMenu.TreeItemType.DIRECTORY) {
                 let dir = iter.get_directory();
                 let name=dir.get_name();
-                if (current_selection=="") {
+                if (current_selection=='') {
                     current_selection=name;
                     current_page_visible_in_menu=0;
                 }
-                let clase="";
+                let clase='';
                 let activated=false;
                 if (name==current_selection) {
                     clase="active";
                     activated=true;
                 }
-                let item = new St.Label({text: name, style_class:"popup-menu-item", pseudo_class: clase, reactive: true});
+                let item = new St.Label({text: name, style_class:'popup-menu-item', pseudo_class: clase, reactive: true});
 
                 item._group_name=name;
                 item._custom_event_id=item.connect('button-release-event',Lang.bind(this,this._onCategoryClick));
@@ -233,7 +233,7 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onAppClick : function(actor,event) {
-        actor._app.activate_full(-1,0);
+        actor._app.activate_full(-1,event.get_time());
         this.menu.close();
     },
 
@@ -261,7 +261,7 @@ function disable() {
 }
 
 function init() {
-    current_selection="";
+    current_selection='';
     current_page_visible_in_menu=0;
 }
 
