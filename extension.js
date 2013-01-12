@@ -92,15 +92,9 @@ const ApplicationsButton = new Lang.Class({
                 let page_label = new St.Label({text: texto,style_class:"popup-menu-item",pseudo_class:clase, reactive: true});
 
                 page_label.father=this;
-                page_label.page_assigned=i;
-                page_label.release_id=page_label.connect("button-release-event",function () {
-                    current_page_visible_in_menu=page_label.page_assigned;
-                    page_label.father._display();
-                });
-                page_label.destroy_id=page_label.connect("destroy",function () {
-                    page_label.disconnect(page_label.release_id);
-                    page_label.disconnect(page_label.destroy_id);
-                });
+                page_label._page_assigned=i;
+                page_label._custom_event_id=page_label.connect("button-release-event",Lang.bind(this,this._onPageClick));
+                page_label._custom_destroy_id=page_label.connect('destroy',Lang.bind(this,this._onDestroyActor));
                 pages.add(page_label, {y_align:St.Align.END});
                 pages_visible_in_menu+=1;
             }
@@ -132,15 +126,8 @@ const ApplicationsButton = new Lang.Class({
                     container2.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
                     container2.add(texto, {x_fill: false, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
                     container2._app=app;
-                    container2._father=this;
-                    container2.release_id=container2.connect("button-release-event",function () {
-                        container2._app.activate_full(-1,0);
-                        container2._father.menu.close();
-                    });
-                    container2.destroy_id=container2.connect("destroy",function () {
-                        container2.disconnect(container2.release_id);
-                        container2.disconnect(container2.destroy_id);
-                    });
+                    container2._custom_event_id=container2.connect('button-release-event',Lang.bind(this,this._onAppClick));
+                    container2._custom_destroy_id=container2.connect('destroy',Lang.bind(this,this._onDestroyActor));
 
                     container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
                     this.posx+=1;
@@ -185,17 +172,9 @@ const ApplicationsButton = new Lang.Class({
                 }
                 let item = new St.Label({text: name, style_class:"popup-menu-item", pseudo_class: clase, reactive: true});
 
-                item.father=this;
-                item.group_name=name;
-                item.release_id=item.connect("button-release-event",function () {
-                    current_selection=item.group_name;
-                    current_page_visible_in_menu=0;
-                    item.father._display();
-                });
-                item.destroy_id=item.connect("destroy",function () {
-                    item.disconnect(item.release_id);
-                    item.disconnect(item.destroy_id);
-                });
+                item._group_name=name;
+                item._custom_event_id=item.connect('button-release-event',Lang.bind(this,this._onCategoryClick));
+                item._custom_destroy_id=item.connect('destroy',Lang.bind(this,this._onDestroyActor));
                 class_container.add(item);
                 if (activated) {
                     this._loadCategory(icons_container,dir,item.menu);
@@ -222,6 +201,27 @@ const ApplicationsButton = new Lang.Class({
             current_page_visible_in_menu-=1;
             this._display();
         }
+    },
+
+    _onCategoryClick : function(actor,event) {
+        current_selection=actor._group_name;
+        current_page_visible_in_menu=0;
+        this._display();
+    },
+
+    _onAppClick : function(actor,event) {
+        actor._app.activate_full(-1,0);
+        this.menu.close();
+    },
+
+    _onPageClick : function(actor,event) {
+        current_page_visible_in_menu=actor._page_assigned;
+        this._display();
+    },
+
+    _onDestroyActor : function(actor) {
+        actor.disconnect(actor._custom_event_id);
+        actor.disconnect(actor._custom_destroy_id);
     }
 
 });
