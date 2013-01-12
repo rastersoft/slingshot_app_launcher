@@ -37,7 +37,7 @@ const SlingShotItem = new Lang.Class({
 
 const ApplicationsButton = new Lang.Class({
     Name: 'SlingShot.ApplicationsButton',
-    Extends: PanelMenu.SystemStatusButton,
+    Extends: PanelMenu.Button,
 
     _init: function() {
         main_container=null;
@@ -45,12 +45,17 @@ const ApplicationsButton = new Lang.Class({
         global_container=null;
         this.icon_counter=0;
         pages_visible_in_menu=0;
-        this.parent('start-here','SlingShot');
-        try {
-           let etiqueta = new St.Label({ text: _("Applications")});
-           this._box.add_actor(etiqueta);
-        } catch (err) {
-        }
+        this.parent(0.0,'SlingShot');
+        this.actor.add_style_class_name('panel-status-button');
+        this._box = new St.BoxLayout({ style_class: 'panel-status-button-box' });
+        this.actor.add_actor(this._box);
+        
+        let icon = new St.Icon({ gicon: null, style_class: 'system-status-icon' });
+        this._box.add_actor(icon);
+        icon.icon_name='start-here';
+
+        let etiqueta = new St.Label({ text: _("Applications")});
+        this._box.add_actor(etiqueta);
 
         this._appSys = Shell.AppSystem.get_default();
         this._installedChangedId = this._appSys.connect('installed-changed', Lang.bind(this, this._refresh));
