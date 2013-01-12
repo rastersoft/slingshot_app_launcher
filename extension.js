@@ -1,5 +1,6 @@
 /* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
 
+const ShellVersion = imports.misc.config.PACKAGE_VERSION.split(".");
 const Clutter = imports.gi.Clutter;
 const GMenu = imports.gi.GMenu;
 const Lang = imports.lang;
@@ -266,7 +267,13 @@ function enable() {
     current_page_visible_in_menu=0;
     current_selection='';
     SlingShotButton = new ApplicationsButton();
-    Main.panel.addToStatusArea('slingshot-menu', SlingShotButton, 0, 'left');
+    
+    if (ShellVersion[1]>4) {
+        Main.panel.addToStatusArea('slingshot-menu', SlingShotButton, 0, 'left');
+    } else {
+        Main.panel._leftBox.insert_child_at_index(SlingShotButton.actor,0);
+        Main.panel._menus.addMenu(SlingShotButton.menu);
+    }
 }
 
 function disable() {
