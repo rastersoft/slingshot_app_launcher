@@ -45,9 +45,12 @@ const ApplicationsButton = new Lang.Class({
         global_container=null;
         this.icon_counter=0;
         pages_visible_in_menu=0;
-        this.parent('','SlingShot');
-        let etiqueta = new St.Label({ text: _("Applications")});
-        this._box.add_actor(etiqueta);
+        this.parent('start-here','SlingShot');
+        try {
+           let etiqueta = new St.Label({ text: _("Applications")});
+           this._box.add_actor(etiqueta);
+        } catch (err) {
+        }
 
         this._appSys = Shell.AppSystem.get_default();
         this._installedChangedId = this._appSys.connect('installed-changed', Lang.bind(this, this._refresh));
