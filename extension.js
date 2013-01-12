@@ -68,6 +68,16 @@ const ApplicationsButton = new Lang.Class({
         this.menu.removeAll();
     },
 
+    _sortApps: function(param1, param2) {
+
+        if (param1.get_name().toUpperCase()<param2.get_name().toUpperCase()) {
+            return -1;
+        } else {
+            return 1;
+        }
+
+    },
+
     // Recursively load a GMenuTreeDirectory
     // (taken from js/ui/appDisplay.js in core shell)
 
@@ -77,7 +87,39 @@ const ApplicationsButton = new Lang.Class({
         this.posy=0;
         this.icon_counter=0;
         
-        this._loadCategory2(container,dir,menu);
+        let app_list=[];
+        this._loadCategory2(container,dir,menu,app_list);
+
+        app_list.sort(this._sortApps);
+
+        var counter=0;
+        var minimum_counter=current_page_visible_in_menu*12;
+        var maximum_counter=(current_page_visible_in_menu+1)*12;
+
+        for (var item in app_list) {
+            counter+=1;
+            if ((counter>minimum_counter)&&(counter<=maximum_counter)) {
+                let app=app_list[item];
+                let icon = app.create_icon_texture(ICON_SIZE);
+                let texto = new St.Label({text:app.get_name(), style_class: "slingshot_table"});
+                let container2=new St.BoxLayout({vertical: true, reactive: true});
+                texto.clutter_text.line_wrap_mode = Pango.WrapMode.WORD;
+                texto.clutter_text.line_wrap = true;
+                    
+                container2.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+                container2.add(texto, {x_fill: false, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+                container2._app=app;
+                container2._custom_event_id=container2.connect('button-release-event',Lang.bind(this,this._onAppClick));
+                container2._custom_destroy_id=container2.connect('destroy',Lang.bind(this,this._onDestroyActor));
+
+                container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
+                this.posx+=1;
+                if (this.posx==4) {
+                    this.posx=0;
+                    this.posy+=1;
+                }
+            }
+        }
 
 
         if (this.icon_counter>12) { // there are several pages
@@ -104,7 +146,7 @@ const ApplicationsButton = new Lang.Class({
         }
     },
 
-    _loadCategory2: function(container,dir, menu,posx,posy) {
+    _loadCategory2: function(container,dir, menu,app_list) {
         var iter = dir.iter();
         var nextType;
 
@@ -113,31 +155,11 @@ const ApplicationsButton = new Lang.Class({
                 let entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
                     let app = this._appSys.lookup_app_by_tree_entry(entry);
+                    app_list[this.icon_counter]=app;
                     this.icon_counter+=1;
-                    if ((this.icon_counter<=(current_page_visible_in_menu*12))||(this.icon_counter>((current_page_visible_in_menu+1)*12))) {
-                        continue;
-                    }
-                    let icon = app.create_icon_texture(ICON_SIZE);
-                    let texto = new St.Label({text:app.get_name(), style_class: "slingshot_table"});
-                    let container2=new St.BoxLayout({vertical: true, reactive: true});
-                    texto.clutter_text.line_wrap_mode = Pango.WrapMode.WORD;
-                    texto.clutter_text.line_wrap = true;
-                    
-                    container2.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
-                    container2.add(texto, {x_fill: false, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
-                    container2._app=app;
-                    container2._custom_event_id=container2.connect('button-release-event',Lang.bind(this,this._onAppClick));
-                    container2._custom_destroy_id=container2.connect('destroy',Lang.bind(this,this._onDestroyActor));
-
-                    container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
-                    this.posx+=1;
-                    if (this.posx==4) {
-                        this.posx=0;
-                        this.posy+=1;
-                    }
                 }
             } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
-                this._loadCategory2(container,iter.get_directory(), menu);
+                this._loadCategory2(container,iter.get_directory(), menu,app_list);
             }
         }
     },
