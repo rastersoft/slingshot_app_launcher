@@ -205,10 +205,11 @@ const ApplicationsButton = new Lang.Class({
         }
 
         if (pages_visible_in_menu>1) {
-            global_container.connect("scroll-event", Lang.bind(this,this._onScroll));
+            global_container._custom_event_id=global_container.connect('scroll-event', Lang.bind(this,this._onScroll));
+            global_container._custom_destroy_id=global_container.connect('destroy',Lang.bind(this,this._onDestroyActor));
         }
 
-        let ppal = new SlingShotItem(main_container,"",{reactive:false});
+        let ppal = new SlingShotItem(main_container,'',{reactive:false});
         this.menu.removeAll();
         this.menu.addMenuItem(ppal);
     },
