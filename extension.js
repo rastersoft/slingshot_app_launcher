@@ -194,7 +194,7 @@ const ApplicationsButton = new Lang.Class({
 
     _display : function() {
         main_container = new St.BoxLayout({vertical: false});
-        class_container = new St.BoxLayout({vertical: true});
+        class_container = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
         global_container = new St.Table({style_class:'slingshot_apps', homogeneous: false, reactive: true});
         icons_container = new St.Table({ homogeneous: false});
         main_container.add(class_container);
