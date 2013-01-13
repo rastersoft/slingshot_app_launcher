@@ -268,6 +268,7 @@ const ApplicationsButton = new Lang.Class({
 
         actor._app.open_new_window(-1);
         this.menu.close();
+        this._display();
     },
 
     _onPageClick : function(actor,event) {
