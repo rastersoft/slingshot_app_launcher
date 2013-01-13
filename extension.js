@@ -12,6 +12,13 @@
  *                                                 *
  ***************************************************/
 
+/* Versions:
+
+    1: First public version
+    2: Now highlights the icons when the mouse cursor flies over them
+
+*/
+
 const ShellVersion = imports.misc.config.PACKAGE_VERSION.split(".");
 const Clutter = imports.gi.Clutter;
 const GMenu = imports.gi.GMenu;
@@ -120,15 +127,17 @@ const ApplicationsButton = new Lang.Class({
                 let app=app_list[item];
                 let icon = app.create_icon_texture(ICON_SIZE);
                 let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table'});
-                let container2=new St.BoxLayout({vertical: true, reactive: true});
+                let container2=new St.BoxLayout({vertical: true, reactive: true, style_class:'slingshot_bg_icons', pseudo_class:''});
                 texto.clutter_text.line_wrap_mode = Pango.WrapMode.WORD;
                 texto.clutter_text.line_wrap = true;
-                    
+
                 container2.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
                 container2.add(texto, {x_fill: false, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
                 container2._app=app;
                 container2._custom_event_id=container2.connect('button-release-event',Lang.bind(this,this._onAppClick));
-                container2._custom_destroy_id=container2.connect('destroy',Lang.bind(this,this._onDestroyActor));
+                container2._custom_enter_id=container2.connect('enter-event',Lang.bind(this,this._onAppEnter));
+                container2._custom_leave_id=container2.connect('leave-event',Lang.bind(this,this._onAppLeave));
+                container2._custom_destroy_id=container2.connect('destroy',Lang.bind(this,this._onAppDestroy));
 
                 container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
                 this.posx+=1;
@@ -208,7 +217,7 @@ const ApplicationsButton = new Lang.Class({
                 let clase='';
                 let activated=false;
                 if (name==current_selection) {
-                    clase="active";
+                    clase='active';
                     activated=true;
                 }
                 let item = new St.Label({text: name, style_class:'popup-menu-item', pseudo_class: clase, reactive: true});
@@ -269,6 +278,21 @@ const ApplicationsButton = new Lang.Class({
     _onDestroyActor : function(actor,event) {
         actor.disconnect(actor._custom_event_id);
         actor.disconnect(actor._custom_destroy_id);
+    },
+
+    _onAppEnter : function(actor,event) {
+        actor.set_style_pseudo_class('active');
+    },
+
+    _onAppLeave : function(actor,event) {
+        actor.set_style_pseudo_class('');
+    },
+
+    _onAppDestroy : function(actor,event) {
+        actor.disconnect(actor._custom_event_id);
+        actor.disconnect(actor._custom_destroy_id);
+        actor.disconnect(actor._custom_enter_id);
+        actor.disconnect(actor._custom_leave_id);
     }
 
 });
