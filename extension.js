@@ -134,10 +134,10 @@ const ApplicationsButton = new Lang.Class({
                 container2.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
                 container2.add(texto, {x_fill: false, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
                 container2._app=app;
-                container2._custom_event_id=container2.connect('button-release-event',Lang.bind(this,this._onAppClick));
-                container2._custom_enter_id=container2.connect('enter-event',Lang.bind(this,this._onAppEnter));
-                container2._custom_leave_id=container2.connect('leave-event',Lang.bind(this,this._onAppLeave));
-                container2._custom_destroy_id=container2.connect('destroy',Lang.bind(this,this._onAppDestroy));
+                container2._custom_event_id=container2.connect('button-release-event',Lang.bind(this,this.onAppClick));
+                container2._custom_enter_id=container2.connect('enter-event',Lang.bind(this,this.onAppEnter));
+                container2._custom_leave_id=container2.connect('leave-event',Lang.bind(this,this.onAppLeave));
+                container2._custom_destroy_id=container2.connect('destroy',Lang.bind(this,this.onAppDestroy));
 
                 container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
                 this.posx+=1;
@@ -160,8 +160,8 @@ const ApplicationsButton = new Lang.Class({
                 let page_label = new St.Label({text: texto,style_class:'popup-menu-item',pseudo_class:clase, reactive: true});
 
                 page_label._page_assigned=i;
-                page_label._custom_event_id=page_label.connect('button-release-event',Lang.bind(this,this._onPageClick));
-                page_label._custom_destroy_id=page_label.connect('destroy',Lang.bind(this,this._onDestroyActor));
+                page_label._custom_event_id=page_label.connect('button-release-event',Lang.bind(this,this.onPageClick));
+                page_label._custom_destroy_id=page_label.connect('destroy',Lang.bind(this,this.onDestroyActor));
                 pages.add(page_label, {y_align:St.Align.END});
                 pages_visible_in_menu+=1;
             }
@@ -223,8 +223,8 @@ const ApplicationsButton = new Lang.Class({
                 let item = new St.Label({text: name, style_class:'popup-menu-item', pseudo_class: clase, reactive: true});
 
                 item._group_name=name;
-                item._custom_event_id=item.connect('button-release-event',Lang.bind(this,this._onCategoryClick));
-                item._custom_destroy_id=item.connect('destroy',Lang.bind(this,this._onDestroyActor));
+                item._custom_event_id=item.connect('button-release-event',Lang.bind(this,this.onCategoryClick));
+                item._custom_destroy_id=item.connect('destroy',Lang.bind(this,this.onDestroyActor));
                 class_container.add(item);
                 if (activated) {
                     this._loadCategory(icons_container,dir,item.menu);
@@ -233,8 +233,8 @@ const ApplicationsButton = new Lang.Class({
         }
 
         if (pages_visible_in_menu>1) {
-            global_container._custom_event_id=global_container.connect('scroll-event', Lang.bind(this,this._onScrollWheel));
-            global_container._custom_destroy_id=global_container.connect('destroy',Lang.bind(this,this._onDestroyActor));
+            global_container._custom_event_id=global_container.connect('scroll-event', Lang.bind(this,this.onScrollWheel));
+            global_container._custom_destroy_id=global_container.connect('destroy',Lang.bind(this,this.onDestroyActor));
         }
 
         let ppal = new SlingShotItem(main_container,'',{reactive:false});
@@ -242,7 +242,7 @@ const ApplicationsButton = new Lang.Class({
         this.menu.addMenuItem(ppal);
     },
 
-    _onScrollWheel : function(actor,event) {
+    onScrollWheel : function(actor,event) {
         let direction = event.get_scroll_direction();
         if ((direction == Clutter.ScrollDirection.DOWN) && (current_page_visible_in_menu<(pages_visible_in_menu-1))) {
             current_page_visible_in_menu+=1;
@@ -254,13 +254,13 @@ const ApplicationsButton = new Lang.Class({
         }
     },
 
-    _onCategoryClick : function(actor,event) {
+    onCategoryClick : function(actor,event) {
         current_selection=actor._group_name;
         current_page_visible_in_menu=0;
         this._display();
     },
 
-    _onAppClick : function(actor,event) {
+    onAppClick : function(actor,event) {
 /*      This is a launcher, so we create a new window; if we want
         to go to the current window, we should use
 
@@ -268,34 +268,37 @@ const ApplicationsButton = new Lang.Class({
 
         actor._app.open_new_window(-1);
         this.menu.close();
-        this._display();
     },
 
-    _onPageClick : function(actor,event) {
+    onPageClick : function(actor,event) {
         current_page_visible_in_menu=actor._page_assigned;
         this._display();
     },
 
-    _onDestroyActor : function(actor,event) {
+    onDestroyActor : function(actor,event) {
         actor.disconnect(actor._custom_event_id);
         actor.disconnect(actor._custom_destroy_id);
     },
 
-    _onAppEnter : function(actor,event) {
+    onAppEnter : function(actor,event) {
         actor.set_style_pseudo_class('active');
     },
 
-    _onAppLeave : function(actor,event) {
+    onAppLeave : function(actor,event) {
         actor.set_style_pseudo_class('');
     },
 
-    _onAppDestroy : function(actor,event) {
+    onAppDestroy : function(actor,event) {
         actor.disconnect(actor._custom_event_id);
         actor.disconnect(actor._custom_destroy_id);
         actor.disconnect(actor._custom_enter_id);
         actor.disconnect(actor._custom_leave_id);
-    }
+    },
 
+    _onOpenStateChanged: function(menu, open) {
+    	    this.parent(menu,open);
+    	    this._display();
+    	}
 });
 
 let SlingShotButton;
