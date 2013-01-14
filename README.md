@@ -11,3 +11,4 @@ History of versions:
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
+https://github.com/rastersoft/slingshot_app_launcher
