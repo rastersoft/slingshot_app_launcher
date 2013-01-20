@@ -1,4 +1,5 @@
 {"name": "Slingshot App Launcher",
  "description": "A clone of the SlingShot application launcher from Elementary OS for Gnome shell",
  "shell-version": ["3.4","3.6"],
- "uuid": "slingshot@rastersoft.com"}
+ "uuid": "slingshot@rastersoft.com",
+ "url": "https://github.com/rastersoft/slingshot_app_launcher"}

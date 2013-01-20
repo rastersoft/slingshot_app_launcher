@@ -16,7 +16,9 @@
 
     1: First public version
     2: Now highlights the icons when the mouse cursor flies over them
-
+    3: Code much more compliant with Gnome Shell style
+    4: Fixed three forgotten "this."
+    
 */
 
 const ShellVersion = imports.misc.config.PACKAGE_VERSION.split(".");
