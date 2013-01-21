@@ -192,9 +192,9 @@ const ApplicationsButton = new Lang.Class({
         this.mainContainer = new St.BoxLayout({vertical: false});
         this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
         this.globalContainer = new St.Table({style_class:'slingshot_apps', homogeneous: false, reactive: true});
-        icons_container = new St.Table({ homogeneous: false});
+        this.icons_container = new St.Table({ homogeneous: false});
         this.mainContainer.add(this.classContainer);
-        this.globalContainer.add(icons_container, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
+        this.globalContainer.add(this.icons_container, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         this.mainContainer.add(this.globalContainer);
 
         let tree = this._appSys.get_tree();
@@ -219,7 +219,7 @@ const ApplicationsButton = new Lang.Class({
 
                 if (categoryName==this.currentSelection) {
                     item.set_style_pseudo_class('active');
-                    this._loadCategory(icons_container,dir,item.menu);
+                    this._loadCategory(this.icons_container,dir,item.menu);
                 }
             }
         }
