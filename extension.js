@@ -33,8 +33,15 @@ const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
+const SlingShot_App_Launcher = imports.misc.extensionUtils.getCurrentExtension();
+const Lib = SlingShot_App_Launcher.imports.lib;
+
+const SCHEMA = "org.gnome.shell.extensions.slingshot_app_launcher";
+
 const ICON_SIZE = 64;
 const ICONS_PER_PAGE = 12;
+
+let settings;
 
 const SlingShotItem = new Lang.Class({
     Name: 'SlingShot.SlingShotItem',
@@ -78,10 +85,17 @@ const ApplicationsButton = new Lang.Class({
         this._appSys = Shell.AppSystem.get_default();
         this._installedChangedId = this._appSys.connect('installed-changed', Lang.bind(this, this._refresh));
 
+        this._onSetActivitiesStatus();
+        this._onSetActivitiesHotspot();
+        this._settingBind=settings.connect("changed",Lang.bind(this,this._onChangedSetting));
+
         this._display();
     },
 
     destroy: function() {
+        settings.disconnect(this._settingBind);
+        this._setActivitiesNoVisible(false);
+        this._setActivitiesNoHotspot(false);
         this._appSys.disconnect(this._installedChangedId);
         this.parent();
     },
@@ -292,7 +306,59 @@ const ApplicationsButton = new Lang.Class({
     _onOpenStateChanged: function(menu, open) {
         this.parent(menu,open);
         this._display();
+    },
+    
+    _onChangedSetting: function(key) {
+        this._onSetActivitiesHotspot();
+        this._onSetActivitiesStatus();
+    },
+    
+    _onSetActivitiesStatus: function() {
+        this._setActivitiesNoVisible(settings.get_boolean("show-activities"));
+    },
+    
+    _setActivitiesNoVisible: function(mode) {
+        if (mode) {
+            if (ShellVersion[1]>4) {
+                let indicator = Main.panel.statusArea['activities'];
+                if(indicator != null)
+                    indicator.container.hide();
+            } else {
+                Main.panel._activitiesButton.actor.hide();
+            }
+        } else {
+            if (ShellVersion[1]>4) {
+                let indicator = Main.panel.statusArea['activities'];
+                if(indicator != null)
+                    indicator.container.show();
+            } else {
+                Main.panel._activitiesButton.actor.show();
+            }
+        }
+    },
+    
+    _onSetActivitiesHotspot: function() {
+        this._setActivitiesNoHotspot(settings.get_boolean("disable-activities-hotspot"));
+    },
+    
+    _setActivitiesNoHotspot: function(mode) {
+        if (mode) {
+            if (ShellVersion[1]>4) {
+                Main.panel.statusArea['activities'].hotCorner._corner.hide();
+            } else {
+                Main.panel._activitiesButton._hotCorner._corner.hide();
+            }
+            Main.layoutManager._hotCorners.forEach(function(hotCorner) { hotCorner._corner.hide(); });
+        } else {
+            if (ShellVersion[1]>4) {
+                Main.panel.statusArea['activities'].hotCorner._corner.show();
+            } else {
+                Main.panel._activitiesButton._hotCorner._corner.show();
+            }
+            Main.layoutManager._hotCorners.forEach(function(hotCorner) { hotCorner._corner.show(); });
+        }
     }
+    
 });
 
 let SlingShotButton;
@@ -301,29 +367,18 @@ function enable() {
     SlingShotButton = new ApplicationsButton();
     
     if (ShellVersion[1]>4) {
-        let indicator = Main.panel.statusArea['activities'];
-        if(indicator != null)
-            indicator.container.hide();
         Main.panel.addToStatusArea('slingshot-menu', SlingShotButton, 0, 'left');
     } else {
-        Main.panel._activitiesButton.actor.hide();
         Main.panel._leftBox.insert_child_at_index(SlingShotButton.actor,0);
-        Main.panel._menus.addMenu(SlingShotButton.menu);
+        Main.panel._menus.addMenu(SlingShotButton.menu);            
     }
 }
 
 function disable() {
     SlingShotButton.destroy();
-    if (ShellVersion[1]>4) {
-        let indicator = Main.panel.statusArea['activities'];
-        if(indicator != null)
-            indicator.container.show();
-    } else {
-        Main.panel._activitiesButton.actor.show();
-    }
 }
 
 function init() {
-    // Nothing to do here
+    settings = Lib.getSettings(SCHEMA);
 }
 
