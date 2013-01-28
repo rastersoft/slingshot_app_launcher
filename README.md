@@ -9,6 +9,7 @@ History of versions:
     1: First public version
     2: Highlights the icons when the mouse cursor files over them
     3: Code much more compliant with Gnome Shell style
+    4: Fixed three forgotten "this."
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
