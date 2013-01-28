@@ -290,9 +290,9 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onOpenStateChanged: function(menu, open) {
-    	    this.parent(menu,open);
-    	    this._display();
-    	}
+        this.parent(menu,open);
+        this._display();
+    }
 });
 
 let SlingShotButton;
@@ -301,8 +301,12 @@ function enable() {
     SlingShotButton = new ApplicationsButton();
     
     if (ShellVersion[1]>4) {
+        let indicator = Main.panel.statusArea['activities'];
+        if(indicator != null)
+            indicator.container.hide();
         Main.panel.addToStatusArea('slingshot-menu', SlingShotButton, 0, 'left');
     } else {
+        imports.ui.main.panel._activitiesButton.hide();
         Main.panel._leftBox.insert_child_at_index(SlingShotButton.actor,0);
         Main.panel._menus.addMenu(SlingShotButton.menu);
     }
@@ -310,6 +314,13 @@ function enable() {
 
 function disable() {
     SlingShotButton.destroy();
+    if (ShellVersion[1]>4) {
+        let indicator = Main.panel.statusArea['activities'];
+        if(indicator != null)
+            indicator.container.show();
+    } else {
+        imports.ui.main.panel._activitiesButton.show();
+    }
 }
 
 function init() {
