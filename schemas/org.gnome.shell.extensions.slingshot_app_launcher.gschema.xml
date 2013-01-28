@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema path="/org/gnome/shell/extensions/slingshot_app_launcher/" id="org.gnome.shell.extensions.slingshot_app_launcher">
+    <key type="b" name="show-activities">
+        <default>true</default>
+        <summary>Put the Activities button inside Slingshot</summary>
+        <description>Removes the Activities button from the top bar and puts it inside the applications menu.</description>
+    </key>
+    <key type="b" name="disable-activities-hotspot">
+        <default>true</default>
+        <summary>Disable the Activities (top left) hotspot</summary>
+        <description>Disables the top left hotspot (that triggers the Activities mode).</description>
+    </key>
+  </schema>
+</schemalist>
