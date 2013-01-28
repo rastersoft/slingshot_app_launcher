@@ -306,7 +306,7 @@ function enable() {
             indicator.container.hide();
         Main.panel.addToStatusArea('slingshot-menu', SlingShotButton, 0, 'left');
     } else {
-        imports.ui.main.panel._activitiesButton.hide();
+        Main.panel._activitiesButton.hide();
         Main.panel._leftBox.insert_child_at_index(SlingShotButton.actor,0);
         Main.panel._menus.addMenu(SlingShotButton.menu);
     }
@@ -319,7 +319,7 @@ function disable() {
         if(indicator != null)
             indicator.container.show();
     } else {
-        imports.ui.main.panel._activitiesButton.show();
+        Main.panel._activitiesButton.show();
     }
 }
 
