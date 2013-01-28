@@ -67,8 +67,9 @@ const ApplicationsButton = new Lang.Class({
         this.mainContainer=null;
         this.classContainer=null;
         this.globalContainer=null;
-        this.icons_container=null;
+        this.iconsContainer=null;
         this.icon_counter=0;
+        this._activitiesNoVisible=false;
 
         this.parent(0.0,'SlingShot');
         this.actor.add_style_class_name('panel-status-button');
@@ -177,7 +178,7 @@ const ApplicationsButton = new Lang.Class({
                 pages.add(page_label, {y_align:St.Align.END});
                 this.pagesVisibleInMenu+=1;
             }
-            this.globalContainer.add(pages, {row: 1, col: 0, x_fill: false, y_fill: false, y_expand: false, x_align: St.Align.MIDDLE, y_align: St.Align.END});
+            this.mainContainer.add(pages, {row: 1, col: 1, x_fill: false, y_fill: false, y_expand: false, x_align: St.Align.MIDDLE, y_align: St.Align.END});
         } else {
             this.pagesVisibleInMenu=1;
         }
@@ -205,13 +206,13 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _display : function() {
-        this.mainContainer = new St.BoxLayout({vertical: false});
+        this.mainContainer = new St.Table({style_class:'slingshot_apps', homogeneous: false});
         this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
         this.globalContainer = new St.Table({style_class:'slingshot_apps', homogeneous: false, reactive: true});
-        this.icons_container = new St.Table({ homogeneous: false});
-        this.mainContainer.add(this.classContainer);
-        this.globalContainer.add(this.icons_container, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
-        this.mainContainer.add(this.globalContainer);
+        this.iconsContainer = new St.Table({ homogeneous: false});
+        this.mainContainer.add(this.classContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
+        this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
+        this.mainContainer.add(this.globalContainer, {row: 0, col:1, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
 
         let tree = this._appSys.get_tree();
         let root = tree.get_root_directory();
@@ -235,7 +236,7 @@ const ApplicationsButton = new Lang.Class({
 
                 if (categoryName==this.currentSelection) {
                     item.set_style_pseudo_class('active');
-                    this._loadCategory(this.icons_container,dir,item.menu);
+                    this._loadCategory(this.iconsContainer,dir,item.menu);
                 }
             }
         }
@@ -245,9 +246,20 @@ const ApplicationsButton = new Lang.Class({
             this.globalContainer._customDestroyId=this.globalContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
         }
 
+        if(this._activitiesNoVisible) {
+            let item = new St.Label({text: _("Activities"), style_class:'popup-menu-item', reactive: true});
+            this.mainContainer.add(item, {row: 1, col: 0, x_fill: false, y_fill: false, y_expand: false, x_align: St.Align.START, y_align: St.Align.END});
+            item._customEventId=item.connect('button-release-event',Lang.bind(this,this._onActivitiesClick));
+            item._customDestroyId=item.connect('destroy',Lang.bind(this,this._onDestroyActor));
+        }
+
         let ppal = new SlingShotItem(this.mainContainer,'',{reactive:false});
         this.menu.removeAll();
         this.menu.addMenuItem(ppal);
+    },
+
+    _onActivitiesClick: function(actor,event) {
+        Main.overview.show();
     },
 
     _onScrollWheel : function(actor,event) {
@@ -318,6 +330,7 @@ const ApplicationsButton = new Lang.Class({
     },
     
     _setActivitiesNoVisible: function(mode) {
+        this._activitiesNoVisible=mode;
         if (mode) {
             if (ShellVersion[1]>4) {
                 let indicator = Main.panel.statusArea['activities'];
