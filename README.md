@@ -10,6 +10,9 @@ History of versions:
     2: Highlights the icons when the mouse cursor files over them
     3: Code much more compliant with Gnome Shell style
     4: Fixed three forgotten "this."
+    5: Allows to move the Activities button inside the menu and
+       disable the hotspot
+    6: Packed the schemas (forgotten in version 5)
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com

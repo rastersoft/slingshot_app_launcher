@@ -18,6 +18,9 @@
     2: Now highlights the icons when the mouse cursor flies over them
     3: Code much more compliant with Gnome Shell style
     4: Fixed three forgotten "this."
+    5: Allows to move the Activities button inside the menu and
+       disable the hotspot
+    6: Packed the schemas (forgotten in version 5)
     
 */
 
@@ -134,30 +137,53 @@ const ApplicationsButton = new Lang.Class({
         var minimumCounter=this.currentPageVisibleInMenu*ICONS_PER_PAGE;
         var maximumCounter=(this.currentPageVisibleInMenu+1)*ICONS_PER_PAGE;
 
+							var shown_icons=0;
         for (var item in app_list) {
             counter+=1;
             if ((counter>minimumCounter)&&(counter<=maximumCounter)) {
+            	    shown_icons+=1;
                 let app=app_list[item];
                 let icon = app.create_icon_texture(ICON_SIZE);
                 let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table'});
-                let container2=new St.BoxLayout({vertical: true, reactive: true, style_class:'slingshot_bg_icons', pseudo_class:''});
+                // notification-icon-button
+                // panel-button
+                // system-status-icon
+                // overview-icon
+                // show-apps :hover
+														let container2=new St.BoxLayout({vertical: true, style_class:'slingshot_table_element'})                
+                let container3=new St.BoxLayout({vertical: true, reactive: true, style_class:'app-well-app'});
+                let container4=new St.BoxLayout({vertical: true, style_class:'overview-icon'})
+                
                 texto.clutter_text.line_wrap_mode = Pango.WrapMode.WORD;
                 texto.clutter_text.line_wrap = true;
 
-                container2.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
-                container2.add(texto, {x_fill: false, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
-                container2._app=app;
-                container2._customEventId=container2.connect('button-release-event',Lang.bind(this,this._onAppClick));
-                container2._customEnterId=container2.connect('enter-event',Lang.bind(this,this._onAppEnter));
-                container2._customLeaveId=container2.connect('leave-event',Lang.bind(this,this._onAppLeave));
-                container2._customDestroyId=container2.connect('destroy',Lang.bind(this,this._onAppDestroy));
+                container4.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+                container4.add(texto, {x_fill: false, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+                container3.add(container4,{x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+                container3._app=app;
+                container3._customEventId=container3.connect('button-release-event',Lang.bind(this,this._onAppClick));
+                container3._customEnterId=container3.connect('enter-event',Lang.bind(this,this._onAppEnter));
+                container3._customLeaveId=container3.connect('leave-event',Lang.bind(this,this._onAppLeave));
+                container3._customDestroyId=container3.connect('destroy',Lang.bind(this,this._onAppDestroy));
+                container3._customPseudoClass='hover';
 
-                container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
+                container2.add(container3, {x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+                container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
                 this.posx+=1;
                 if (this.posx==4) {
                     this.posx=0;
                     this.posy+=1;
                 }
+            }
+        }
+        
+        for (var counter2=shown_icons;counter2<ICONS_PER_PAGE;counter2+=1) {
+            let container2=new St.BoxLayout({vertical: true, style_class:'slingshot_table_element'})
+            container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
+            this.posx+=1;
+            if (this.posx==4) {
+                this.posx=0;
+                this.posy+=1;
             }
         }
 
@@ -206,10 +232,10 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _display : function() {
-        this.mainContainer = new St.Table({style_class:'slingshot_apps', homogeneous: false});
+        this.mainContainer = new St.Table({homogeneous: false});
         this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
-        this.globalContainer = new St.Table({style_class:'slingshot_apps', homogeneous: false, reactive: true});
-        this.iconsContainer = new St.Table({ homogeneous: false});
+        this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
+        this.iconsContainer = new St.Table({ homogeneous: false, style_class:'icon-grid'});
         this.mainContainer.add(this.classContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         this.mainContainer.add(this.globalContainer, {row: 0, col:1, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
@@ -301,7 +327,7 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onAppEnter : function(actor,event) {
-        actor.set_style_pseudo_class('active');
+        actor.set_style_pseudo_class(actor._customPseudoClass);
     },
 
     _onAppLeave : function(actor,event) {
