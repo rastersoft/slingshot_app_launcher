@@ -145,27 +145,22 @@ const ApplicationsButton = new Lang.Class({
                 let app=app_list[item];
                 let icon = app.create_icon_texture(ICON_SIZE);
                 let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table'});
-                // notification-icon-button
-                // panel-button
-                // system-status-icon
-                // overview-icon
-                // show-apps :hover
+
 														let container2=new St.BoxLayout({vertical: true, style_class:'slingshot_table_element'})                
-                let container3=new St.BoxLayout({vertical: true, reactive: true, style_class:'app-well-app'});
-                let container4=new St.BoxLayout({vertical: true, style_class:'overview-icon'})
+                let container3=new St.BoxLayout({vertical: true, reactive: true, style_class:'popup-menu-item'});
                 
                 texto.clutter_text.line_wrap_mode = Pango.WrapMode.WORD;
                 texto.clutter_text.line_wrap = true;
+                //texto.clutter_text.line_ellipsize_mode = Pango.EllipsizeMode.END;
 
-                container4.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
-                container4.add(texto, {x_fill: false, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
-                container3.add(container4,{x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+                container3.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+                container3.add(texto, {x_fill: false, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
                 container3._app=app;
                 container3._customEventId=container3.connect('button-release-event',Lang.bind(this,this._onAppClick));
                 container3._customEnterId=container3.connect('enter-event',Lang.bind(this,this._onAppEnter));
                 container3._customLeaveId=container3.connect('leave-event',Lang.bind(this,this._onAppLeave));
                 container3._customDestroyId=container3.connect('destroy',Lang.bind(this,this._onAppDestroy));
-                container3._customPseudoClass='hover';
+                container3._customPseudoClass='active';
 
                 container2.add(container3, {x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
                 container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
@@ -235,7 +230,7 @@ const ApplicationsButton = new Lang.Class({
         this.mainContainer = new St.Table({homogeneous: false});
         this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
         this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
-        this.iconsContainer = new St.Table({ homogeneous: false, style_class:'icon-grid'});
+        this.iconsContainer = new St.Table({ homogeneous: true});
         this.mainContainer.add(this.classContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         this.mainContainer.add(this.globalContainer, {row: 0, col:1, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
@@ -273,8 +268,12 @@ const ApplicationsButton = new Lang.Class({
         }
 
         if(this._activitiesNoVisible) {
-            let item = new St.Label({text: _("Activities"), style_class:'popup-menu-item', reactive: true});
-            this.mainContainer.add(item, {row: 1, col: 0, x_fill: false, y_fill: false, y_expand: false, x_align: St.Align.START, y_align: St.Align.END});
+        	   // one empty element to separate ACTIVITIES from the list
+							    let item = new St.Label({text: ' ', style_class:'popup-menu-item', reactive: false});
+            this.classContainer.add(item);
+            
+            item = new St.Label({text: _("Activities"), style_class:'popup-menu-item', reactive: true});
+            this.mainContainer.add(item, {row: 2, col: 0, x_fill: false, y_fill: false, y_expand: false, x_align: St.Align.START, y_align: St.Align.END});
             item._customEventId=item.connect('button-release-event',Lang.bind(this,this._onActivitiesClick));
             item._customDestroyId=item.connect('destroy',Lang.bind(this,this._onDestroyActor));
         }
