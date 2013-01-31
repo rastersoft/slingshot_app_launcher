@@ -144,16 +144,15 @@ const ApplicationsButton = new Lang.Class({
         var minimumCounter=this.currentPageVisibleInMenu*ICONS_PER_PAGE;
         var maximumCounter=(this.currentPageVisibleInMenu+1)*ICONS_PER_PAGE;
 
-							var shown_icons=0;
+        var shown_icons=0;
         for (var item in app_list) {
             counter+=1;
             if ((counter>minimumCounter)&&(counter<=maximumCounter)) {
-            	    shown_icons+=1;
+                shown_icons+=1;
                 let app=app_list[item];
                 let icon = app.create_icon_texture(ICON_SIZE);
                 let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table'});
-
-														let container2=new St.BoxLayout({vertical: true, style_class:'slingshot_table_element'})                
+                let container2=new St.BoxLayout({vertical: true, style_class:'slingshot_table_element'})
                 let container3=new St.BoxLayout({vertical: true, reactive: true, style_class:'popup-menu-item'});
                 
                 texto.clutter_text.line_wrap_mode = Pango.WrapMode.WORD;
@@ -276,8 +275,8 @@ const ApplicationsButton = new Lang.Class({
 
         if(this._activitiesNoVisible) {
         
-        	// one empty element to separate ACTIVITIES from the list
-			let item = new St.Label({text: ' ', style_class:'popup-menu-item', reactive: false});
+            // one empty element to separate ACTIVITIES from the list
+            let item = new St.Label({text: ' ', style_class:'popup-menu-item', reactive: false});
             this.classContainer.add(item);
             
             item = new St.Label({text: _("Activities"), style_class:'popup-menu-item', reactive: true});
