@@ -21,6 +21,9 @@
     5: Allows to move the Activities button inside the menu and
        disable the hotspot
     6: Packed the schemas (forgotten in version 5)
+    7: Better use of standard CSS
+       Tries to keep the size of the meny as steady as possible, by
+       tracking the maximum size used
     
 */
 
@@ -73,6 +76,10 @@ const ApplicationsButton = new Lang.Class({
         this.iconsContainer=null;
         this.icon_counter=0;
         this._activitiesNoVisible=false;
+        this._currentWidth=1.0;
+        this._currentHeight=1.0;
+        this._currentWidth_icons=1.0;
+        this._currentHeight_icons=1.0;
 
         this.parent(0.0,'SlingShot');
         this.actor.add_style_class_name('panel-status-button');
@@ -173,7 +180,7 @@ const ApplicationsButton = new Lang.Class({
         }
         
         for (var counter2=shown_icons;counter2<ICONS_PER_PAGE;counter2+=1) {
-            let container2=new St.BoxLayout({vertical: true, style_class:'slingshot_table_element'})
+            let container2=new St.BoxLayout({vertical: true})
             container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
             this.posx+=1;
             if (this.posx==4) {
@@ -268,8 +275,9 @@ const ApplicationsButton = new Lang.Class({
         }
 
         if(this._activitiesNoVisible) {
-        	   // one empty element to separate ACTIVITIES from the list
-							    let item = new St.Label({text: ' ', style_class:'popup-menu-item', reactive: false});
+        
+        	// one empty element to separate ACTIVITIES from the list
+			let item = new St.Label({text: ' ', style_class:'popup-menu-item', reactive: false});
             this.classContainer.add(item);
             
             item = new St.Label({text: _("Activities"), style_class:'popup-menu-item', reactive: true});
@@ -281,6 +289,30 @@ const ApplicationsButton = new Lang.Class({
         let ppal = new SlingShotItem(this.mainContainer,'',{reactive:false});
         this.menu.removeAll();
         this.menu.addMenuItem(ppal);
+        
+        // These lines are to ensure that the menu and the icons keep always the maximum size needed
+        
+        if (this._currentWidth_icons>this.iconsContainer.width) {
+            this.iconsContainer.width=this._currentWidth_icons;
+        } else {
+            this._currentWidth_icons=this.iconsContainer.width;
+        }
+        if (this._currentHeight_icons>this.iconsContainer.height) {
+            this.iconsContainer.height=this._currentHeight_icons;
+        } else {
+            this._currentHeight_icons=this.iconsContainer.height;
+        }
+        
+        if (this._currentWidth>this.mainContainer.width) {
+            this.mainContainer.width=this._currentWidth;
+        } else {
+            this._currentWidth=this.mainContainer.width;
+        }
+        if (this._currentHeight>this.mainContainer.height) {
+            this.mainContainer.height=this._currentHeight;
+        } else {
+            this._currentHeight=this.mainContainer.height;
+        }
     },
 
     _onActivitiesClick: function(actor,event) {

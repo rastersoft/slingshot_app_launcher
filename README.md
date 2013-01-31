@@ -13,6 +13,9 @@ History of versions:
     5: Allows to move the Activities button inside the menu and
        disable the hotspot
     6: Packed the schemas (forgotten in version 5)
+    7: Better use of standard CSS
+       Tries to keep the size of the meny as steady as possible, by
+       tracking the maximum size used
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
