@@ -49,7 +49,7 @@ const SCHEMA = "org.gnome.shell.extensions.slingshot_app_launcher";
 
 const ICON_SIZE = 64;
 const GRID_WIDTH = 170;
-const GRID_HEIGHT = 120;
+const GRID_HEIGHT = 140;
 
 let settings;
 
