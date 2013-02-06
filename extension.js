@@ -24,7 +24,8 @@
     7: Better use of standard CSS
        Tries to keep the size of the meny as steady as possible, by
        tracking the maximum size used
-    8: Reduces the icon matrix when the screen is small (thanks to kirby33)
+    8: Reduces the icon matrix when the screen is small (based on code
+       from kirby33)
     
 */
 
@@ -32,6 +33,8 @@ const ShellVersion = imports.misc.config.PACKAGE_VERSION.split(".");
 const Clutter = imports.gi.Clutter;
 const GMenu = imports.gi.GMenu;
 const Lang = imports.lang;
+const Mainloop = imports.mainloop;
+const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
 const Shell = imports.gi.Shell;
 const St = imports.gi.St;
@@ -82,19 +85,11 @@ const ApplicationsButton = new Lang.Class({
         this._activitiesNoVisible=false;
         this._currentWidth=1.0;
         this._currentHeight=1.0;
-        this._currentWidth_icons=1.0;
-        this._currentHeight_icons=1.0;
 
-        let monitor = LayoutManager.monitors[LayoutManager.primaryIndex];
+        this._monitor = LayoutManager.monitors[LayoutManager.primaryIndex];
 
-        this._iconsPerRow = Math.floor((monitor.width - 302) / GRID_WIDTH);
-        if (this._iconsPerRow>4) {
-            this._iconsPerRow=4;
-        }
-        this._iconsPerPage = Math.floor( ((monitor.height - 186) / GRID_HEIGHT) )* this._iconsPerRow;
-        if (this._iconsPerPage>12) {
-            this._iconsPerPage=12;
-        }
+        this._iconsPerRow = 4;
+        this._iconsPerColumn = 3;
 
         this.parent(0.0,'SlingShot');
         this.actor.add_style_class_name('panel-status-button');
@@ -156,8 +151,9 @@ const ApplicationsButton = new Lang.Class({
         app_list.sort(this._sortApps);
 
         var counter=0;
-        var minimumCounter=this.currentPageVisibleInMenu*this._iconsPerPage;
-        var maximumCounter=(this.currentPageVisibleInMenu+1)*this._iconsPerPage;
+        let iconsPerPage=this._iconsPerRow*this._iconsPerColumn;
+        var minimumCounter=this.currentPageVisibleInMenu*iconsPerPage;
+        var maximumCounter=(this.currentPageVisibleInMenu+1)*iconsPerPage;
 
         var shown_icons=0;
         for (var item in app_list) {
@@ -193,7 +189,7 @@ const ApplicationsButton = new Lang.Class({
             }
         }
 
-        for (var counter2=shown_icons;counter2<this._iconsPerPage;counter2+=1) {
+        for (var counter2=shown_icons;counter2<iconsPerPage;counter2+=1) {
             let texto = new St.Label({text:" "});
             texto.width=ICON_SIZE;
             texto.height=ICON_SIZE;
@@ -210,9 +206,9 @@ const ApplicationsButton = new Lang.Class({
         }
 
         var pages=new St.BoxLayout({vertical: false});
-        if (this.icon_counter>this._iconsPerPage) {
+        if (this.icon_counter>iconsPerPage) {
             this.pagesVisibleInMenu=0;
-            for (var i=0;i<=(this.icon_counter/this._iconsPerPage);i++) {
+            for (var i=0;i<=(this.icon_counter/iconsPerPage);i++) {
                 let clase='';
                 if (i==this.currentPageVisibleInMenu) {
                     clase='active';
@@ -255,6 +251,44 @@ const ApplicationsButton = new Lang.Class({
         }
     },
 
+
+    _repaintMenu : function() {
+
+        Mainloop.source_remove(this._updateRegionIdle);
+        delete this._updateRegionIdle;
+        this._currentWidth=1.0;
+        this._currentHeight=1.0;
+        this._display();
+        return (false);
+    },
+
+
+    _menuSizeChanged : function(actor,event) {
+
+        actor._customRealized=true;
+        if ((this.iconsContainer._customRealized==false) || (this.classContainer._customRealized==false)) {
+            return;
+        }
+
+        if (actor!=this.iconsContainer) {
+            return;
+        }
+
+        let doRefresh=false;
+        if (((this.iconsContainer.width+this.classContainer.width)>((this._monitor.width*3)/4))&&(this._iconsPerRow>1)) {
+            this._iconsPerRow-=1;
+            doRefresh=true;
+        }
+        if (((this.iconsContainer.height)>((this._monitor.height*3)/5))&&(this._iconsPerColumn>1)) {
+            this._iconsPerColumn-=1;
+            doRefresh=true;
+        }
+        if (doRefresh) {
+            this._updateRegionIdle = Mainloop.idle_add(Lang.bind(this, this._repaintMenu),0);
+        }
+    },
+
+
     _display : function() {
         this.mainContainer = new St.Table({homogeneous: false});
         this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
@@ -263,6 +297,14 @@ const ApplicationsButton = new Lang.Class({
         this.mainContainer.add(this.classContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         this.mainContainer.add(this.globalContainer, {row: 0, col:1, x_fill:true, y_fill: true, x_align: St.Align.START, y_align: St.Align.START});
+
+        this.iconsContainer._customRealized=false;
+        this.classContainer._customRealized=false;
+        this.iconsContainer._customEventId=this.iconsContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
+        this.iconsContainer._customDestroyId=this.iconsContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
+        this.classContainer._customEventId=this.classContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
+        this.classContainer._customDestroyId=this.classContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
+
 
         let tree = this._appSys.get_tree();
         let root = tree.get_root_directory();
@@ -312,16 +354,14 @@ const ApplicationsButton = new Lang.Class({
         this.menu.addMenuItem(ppal);
 
         // These lines are to ensure that the menu and the icons keep always the maximum size needed
-        if (this._currentWidth>this.mainContainer.width) {
-            this.mainContainer.width=this._currentWidth;
-        } else {
+        if (this._currentWidth<=this.mainContainer.width) {
             this._currentWidth=this.mainContainer.width;
         }
-        if (this._currentHeight>this.mainContainer.height) {
-            this.mainContainer.height=this._currentHeight;
-        } else {
+        this.mainContainer.width=this._currentWidth;
+        if (this._currentHeight<=this.mainContainer.height) {
             this._currentHeight=this.mainContainer.height;
         }
+        this.mainContainer.height=this._currentHeight;
     },
 
     _onActivitiesClick: function(actor,event) {
