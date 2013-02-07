@@ -26,6 +26,7 @@
        tracking the maximum size used
     8: Reduces the icon matrix when the screen is small (based on code
        from kirby33)
+       Now doesn't show empty pages
     
 */
 
@@ -208,7 +209,7 @@ const ApplicationsButton = new Lang.Class({
         var pages=new St.BoxLayout({vertical: false});
         if (this.icon_counter>iconsPerPage) {
             this.pagesVisibleInMenu=0;
-            for (var i=0;i<=(this.icon_counter/iconsPerPage);i++) {
+            for (var i=0;i<=((this.icon_counter-1)/iconsPerPage);i++) {
                 let clase='';
                 if (i==this.currentPageVisibleInMenu) {
                     clase='active';
