@@ -16,6 +16,11 @@ History of versions:
     7: Better use of standard CSS
        Tries to keep the size of the meny as steady as possible, by
        tracking the maximum size used
+    8: Reduces the icon matrix when the screen is small (based on code
+       from kirby33)
+       Now doesn't show empty pages
+       Allows to customize the style of the main button (with/out icon
+       or text)
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
