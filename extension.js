@@ -27,6 +27,8 @@
     8: Reduces the icon matrix when the screen is small (based on code
        from kirby33)
        Now doesn't show empty pages
+       Allows to customize the style of the main button (with/out icon
+       or text)
     
 */
 
@@ -49,7 +51,7 @@ const Lib = SlingShot_App_Launcher.imports.lib;
 
 const LayoutManager = Main.layoutManager;
 
-const SCHEMA = "org.gnome.shell.extensions.slingshot_app_launcher";
+const SCHEMA = 'org.gnome.shell.extensions.slingshot_app_launcher';
 
 const ICON_SIZE = 64;
 const GRID_WIDTH = 170;
@@ -97,19 +99,20 @@ const ApplicationsButton = new Lang.Class({
         this._box = new St.BoxLayout({ style_class: 'panel-status-button-box' });
         this.actor.add_actor(this._box);
 
-        let icon = new St.Icon({ gicon: null, style_class: 'system-status-icon' });
-        this._box.add_actor(icon);
-        icon.icon_name='start-here';
+        this.buttonIcon = new St.Icon({ gicon: null, style_class: 'system-status-icon' });
+        this._box.add_actor(this.buttonIcon);
+        this.buttonIcon.icon_name='start-here';
 
-        let etiqueta = new St.Label({ text: _("Applications")});
-        this._box.add_actor(etiqueta);
+        this.buttonLabel = new St.Label({ text: _("Applications")});
+        this._box.add_actor(this.buttonLabel);
 
+        this._onSetButtonStyle()
         this._appSys = Shell.AppSystem.get_default();
         this._installedChangedId = this._appSys.connect('installed-changed', Lang.bind(this, this._refresh));
 
         this._onSetActivitiesStatus();
         this._onSetActivitiesHotspot();
-        this._settingBind=settings.connect("changed",Lang.bind(this,this._onChangedSetting));
+        this._settingBind=settings.connect('changed',Lang.bind(this,this._onChangedSetting));
 
         this._display();
     },
@@ -430,10 +433,28 @@ const ApplicationsButton = new Lang.Class({
     _onChangedSetting: function(key) {
         this._onSetActivitiesHotspot();
         this._onSetActivitiesStatus();
+        this._onSetButtonStyle();
+    },
+
+    _onSetButtonStyle: function() {
+        switch(settings.get_enum('menu-button')) {
+        case 0: // text and icon
+            this.buttonIcon.show();
+            this.buttonLabel.show();
+        break;
+        case 1: // only icon
+            this.buttonIcon.show();
+            this.buttonLabel.hide();
+        break;
+        case 2: // only text
+            this.buttonIcon.hide();
+            this.buttonLabel.show();
+        break;
+        }
     },
 
     _onSetActivitiesStatus: function() {
-        this._setActivitiesNoVisible(settings.get_boolean("show-activities"));
+        this._setActivitiesNoVisible(settings.get_boolean('show-activities'));
     },
 
     _setActivitiesNoVisible: function(mode) {

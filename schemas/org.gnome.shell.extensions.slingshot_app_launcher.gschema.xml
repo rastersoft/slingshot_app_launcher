@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
+
+  <enum id="org.gnome.shell.extensions.slingshot_app_launcher.menu_button_enum">
+    <value nick="Icon and text" value="0" />
+    <value nick="Only icon" value="1" />
+    <value nick="Only text" value="2" />
+  </enum>
   <schema path="/org/gnome/shell/extensions/slingshot_app_launcher/" id="org.gnome.shell.extensions.slingshot_app_launcher">
     <key type="b" name="show-activities">
         <default>true</default>
@@ -10,6 +16,11 @@
         <default>true</default>
         <summary>Disable the Activities (top left) hotspot</summary>
         <description>Disables the top left hotspot (that triggers the Activities mode).</description>
+    </key>
+    <key name="menu-button" enum="org.gnome.shell.extensions.slingshot_app_launcher.menu_button_enum">
+      <default>"Icon and text"</default>
+      <summary>Style for the main button</summary>
+      <description>Allows to customize the menu button</description>
     </key>
   </schema>
 </schemalist>
