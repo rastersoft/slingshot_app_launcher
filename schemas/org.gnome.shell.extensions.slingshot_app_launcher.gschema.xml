@@ -22,5 +22,10 @@
       <summary>Style for the main button</summary>
       <description>Allows to customize the menu button</description>
     </key>
+    <key type="b" name="show-categories">
+        <default>false</default>
+        <summary>Show categories in menu</summary>
+        <description>Clasifies the applications in categories, instead of showing them all mixed.</description>
+    </key>
   </schema>
 </schemalist>

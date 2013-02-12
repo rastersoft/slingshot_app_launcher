@@ -54,10 +54,6 @@ const LayoutManager = Main.layoutManager;
 const SCHEMA = 'org.gnome.shell.extensions.slingshot_app_launcher';
 
 const ICON_SIZE = 64;
-const GRID_WIDTH = 170;
-const GRID_HEIGHT = 140;
-
-let settings;
 
 const SlingShotItem = new Lang.Class({
     Name: 'SlingShot.SlingShotItem',
@@ -89,6 +85,8 @@ const ApplicationsButton = new Lang.Class({
         this._currentWidth=1.0;
         this._currentHeight=1.0;
 
+        this._settings = Lib.getSettings(SCHEMA);
+
         this._monitor = LayoutManager.monitors[LayoutManager.primaryIndex];
 
         this._iconsPerRow = 4;
@@ -102,23 +100,21 @@ const ApplicationsButton = new Lang.Class({
         this.buttonIcon = new St.Icon({ gicon: null, style_class: 'system-status-icon' });
         this._box.add_actor(this.buttonIcon);
         this.buttonIcon.icon_name='start-here';
-
         this.buttonLabel = new St.Label({ text: _("Applications")});
         this._box.add_actor(this.buttonLabel);
 
-        this._onSetButtonStyle()
+        this._onChangedSetting();
+        this._settingBind=this._settings.connect('changed',Lang.bind(this,this._onChangedSetting));
+
         this._appSys = Shell.AppSystem.get_default();
         this._installedChangedId = this._appSys.connect('installed-changed', Lang.bind(this, this._refresh));
-
-        this._onSetActivitiesStatus();
-        this._onSetActivitiesHotspot();
-        this._settingBind=settings.connect('changed',Lang.bind(this,this._onChangedSetting));
+        this._fillCategories();
 
         this._display();
     },
 
     destroy: function() {
-        settings.disconnect(this._settingBind);
+        this._settings.disconnect(this._settingBind);
         this._setActivitiesNoVisible(false);
         this._setActivitiesNoHotspot(false);
         this._appSys.disconnect(this._installedChangedId);
@@ -126,6 +122,7 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _refresh: function() {
+        this._fillCategories();
         this._display();
     },
 
@@ -143,28 +140,67 @@ const ApplicationsButton = new Lang.Class({
 
     },
 
-    _loadCategory: function(container,dir, menu) {
+    _fillCategories: function() {
+    
+        this._appList=[];
+        this._appClass=[];
+    
+        let tree = this._appSys.get_tree();
+        let root = tree.get_root_directory();
+
+        let iter = root.iter();
+        let nextType;
+        while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
+            if (nextType == GMenu.TreeItemType.DIRECTORY) {
+                let dir = iter.get_directory();
+                let childrens=[];
+                this._fillCategories2(dir,childrens);
+                if (childrens.length==0) {
+                    continue;
+                }
+                childrens.sort(this._sortApps);
+                let item = { dirItem: dir, dirChilds: childrens };
+                this._appClass.push(item);
+            }
+        }
+        this._appList.sort(this._sortApps);
+    },
+    
+    _fillCategories2: function(dir,childrens) {
+
+        var iter = dir.iter();
+        var nextType;
+
+        while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
+            if (nextType == GMenu.TreeItemType.ENTRY) {
+                let entry = iter.get_entry();
+                if (!entry.get_app_info().get_nodisplay()) {
+                    let app = this._appSys.lookup_app_by_tree_entry(entry);
+                    childrens.push(app);
+                    this._appList.push(app);
+                }
+            } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
+                this._fillCategories2(iter.get_directory(), childrens);
+            }
+        }
+    },
+
+    _paintIcons: function(container,appList,width) {
 
         this.posx=0;
         this.posy=0;
-        this.icon_counter=0;
+        this.iconCounter=0;
 
-        let app_list=[];
-        this._loadCategory2(container,dir,menu,app_list);
-
-        app_list.sort(this._sortApps);
-
-        var counter=0;
-        let iconsPerPage=this._iconsPerRow*this._iconsPerColumn;
+        var iconsPerPage=width*this._iconsPerColumn;
         var minimumCounter=this.currentPageVisibleInMenu*iconsPerPage;
         var maximumCounter=(this.currentPageVisibleInMenu+1)*iconsPerPage;
 
-        var shown_icons=0;
-        for (var item in app_list) {
-            counter+=1;
-            if ((counter>minimumCounter)&&(counter<=maximumCounter)) {
-                shown_icons+=1;
-                let app=app_list[item];
+        var shownIcons=0;
+        for (var item in appList) {
+            this.iconCounter++;
+            if ((this.iconCounter>minimumCounter)&&(this.iconCounter<=maximumCounter)) {
+                shownIcons++;
+                let app=appList[item];
                 let icon = app.create_icon_texture(ICON_SIZE);
                 let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table'});
 
@@ -185,15 +221,15 @@ const ApplicationsButton = new Lang.Class({
 
                 container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
 
-                this.posx+=1;
-                if (this.posx==this._iconsPerRow) {
+                this.posx++;
+                if (this.posx==width) {
                     this.posx=0;
-                    this.posy+=1;
+                    this.posy++;
                 }
             }
         }
 
-        for (var counter2=shown_icons;counter2<iconsPerPage;counter2+=1) {
+        for (var counter2=shownIcons;counter2<iconsPerPage;counter2+=1) {
             let texto = new St.Label({text:" "});
             texto.width=ICON_SIZE;
             texto.height=ICON_SIZE;
@@ -202,59 +238,13 @@ const ApplicationsButton = new Lang.Class({
             container2.add(texto, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
             container2.add(texto2, {x_fill: true, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.START});
             container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
-            this.posx+=1;
-            if (this.posx==this._iconsPerRow) {
+            this.posx++;
+            if (this.posx==width) {
                 this.posx=0;
-                this.posy+=1;
-            }
-        }
-
-        var pages=new St.BoxLayout({vertical: false});
-        if (this.icon_counter>iconsPerPage) {
-            this.pagesVisibleInMenu=0;
-            for (var i=0;i<=((this.icon_counter-1)/iconsPerPage);i++) {
-                let clase='';
-                if (i==this.currentPageVisibleInMenu) {
-                    clase='active';
-                }
-                let texto=(i+1).toString();
-                let page_label = new St.Label({text: texto,style_class:'popup-menu-item',pseudo_class:clase, reactive: true});
-
-                page_label._page_assigned=i;
-                page_label._customEventId=page_label.connect('button-release-event',Lang.bind(this,this._onPageClick));
-                page_label._customDestroyId=page_label.connect('destroy',Lang.bind(this,this._onDestroyActor));
-                pages.add(page_label, {y_align:St.Align.END});
-                this.pagesVisibleInMenu+=1;
-            }
-        } else {
-            this.pagesVisibleInMenu=1;
-            let page_label = new St.Label({text: " ",style_class:'popup-menu-item', reactive: true});
-            pages.add(page_label, {y_align:St.Align.END});
-        }
-        this.mainContainer.add(pages, {row: 1, col: 1, x_fill: false, y_fill: false, y_expand: false, x_align: St.Align.MIDDLE, y_align: St.Align.END});
-    },
-
-    // Recursively load a GMenuTreeDirectory
-    // (taken from js/ui/appDisplay.js in core shell)
-
-    _loadCategory2: function(container,dir, menu,app_list) {
-        var iter = dir.iter();
-        var nextType;
-
-        while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
-            if (nextType == GMenu.TreeItemType.ENTRY) {
-                let entry = iter.get_entry();
-                if (!entry.get_app_info().get_nodisplay()) {
-                    let app = this._appSys.lookup_app_by_tree_entry(entry);
-                    app_list[this.icon_counter]=app;
-                    this.icon_counter+=1;
-                }
-            } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
-                this._loadCategory2(container,iter.get_directory(), menu,app_list);
+                this.posy++;
             }
         }
     },
-
 
     _repaintMenu : function() {
 
@@ -294,30 +284,41 @@ const ApplicationsButton = new Lang.Class({
 
 
     _display : function() {
+    
+        let paintCategories = this._settings.get_boolean('show-categories');
         this.mainContainer = new St.Table({homogeneous: false});
-        this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
+        this.baseContainer = new St.Table({homogeneous: false});
+
         this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
         this.iconsContainer = new St.Table({ homogeneous: true});
-        this.mainContainer.add(this.classContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
-        this.mainContainer.add(this.globalContainer, {row: 0, col:1, x_fill:true, y_fill: true, x_align: St.Align.START, y_align: St.Align.START});
+        
+        let icon_col;
+        
+        if (paintCategories) {
+            this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
+            this.mainContainer.add(this.classContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
+            this.classContainer._customRealized=false;
+            this.classContainer._customEventId=this.classContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
+            this.classContainer._customDestroyId=this.classContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
+            icon_col=1;
+        } else {
+            this.classContainer = {_customRealized:true, width:0, height:0};
+            icon_col=0;
+        }
+        
+        this.mainContainer.add(this.globalContainer, {row: 0, col:icon_col, x_fill:true, y_fill: true, x_align: St.Align.START, y_align: St.Align.START});
+        this.mainContainer.add(this.baseContainer,{row: 1, col:0, col_span: icon_col+1, x_fill: true, y_fill: false, x_align: St.Align.START, y_align: St.Align.END});
 
         this.iconsContainer._customRealized=false;
-        this.classContainer._customRealized=false;
         this.iconsContainer._customEventId=this.iconsContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
         this.iconsContainer._customDestroyId=this.iconsContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
-        this.classContainer._customEventId=this.classContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
-        this.classContainer._customDestroyId=this.classContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
 
-
-        let tree = this._appSys.get_tree();
-        let root = tree.get_root_directory();
-
-        let iter = root.iter();
-        let nextType;
-        while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
-            if (nextType == GMenu.TreeItemType.DIRECTORY) {
-                let dir = iter.get_directory();
+        var iconsPerPage=this._iconsPerRow*this._iconsPerColumn;
+        if (paintCategories) {
+            for (let i=0; i<this._appClass.length; i++) {
+                let dItem= this._appClass[i];
+                let dir = dItem.dirItem;
                 let categoryName=dir.get_name();
                 if (this.currentSelection=='') {
                     this.currentSelection=categoryName;
@@ -332,9 +333,35 @@ const ApplicationsButton = new Lang.Class({
 
                 if (categoryName==this.currentSelection) {
                     item.set_style_pseudo_class('active');
-                    this._loadCategory(this.iconsContainer,dir,item.menu);
+                    this._paintIcons(this.iconsContainer,dItem.dirChilds,this._iconsPerRow);
                 }
             }
+        } else {
+            this._paintIcons(this.iconsContainer,this._appList,this._iconsPerRow+1);
+            iconsPerPage+=this._iconsPerColumn;
+        }
+        
+        let pages=new St.BoxLayout({vertical: false});
+        if (this.iconCounter>iconsPerPage) {
+            this.pagesVisibleInMenu=0;
+            for (var i=0;i<=((this.iconCounter-1)/iconsPerPage);i++) {
+                let clase='';
+                if (i==this.currentPageVisibleInMenu) {
+                    clase='active';
+                }
+                let texto=(i+1).toString();
+                let page_label = new St.Label({text: texto,style_class:'popup-menu-item',pseudo_class:clase, reactive: true});
+
+                page_label._page_assigned=i;
+                page_label._customEventId=page_label.connect('button-release-event',Lang.bind(this,this._onPageClick));
+                page_label._customDestroyId=page_label.connect('destroy',Lang.bind(this,this._onDestroyActor));
+                pages.add(page_label, {y_align:St.Align.START});
+                this.pagesVisibleInMenu+=1;
+            }
+        } else {
+            this.pagesVisibleInMenu=1;
+            let page_label = new St.Label({text: " ",style_class:'popup-menu-item', reactive: true});
+            pages.add(page_label, {y_align:St.Align.START});
         }
 
         if (this.pagesVisibleInMenu>1) {
@@ -344,13 +371,19 @@ const ApplicationsButton = new Lang.Class({
 
         if(this._activitiesNoVisible) {
             // one empty element to separate ACTIVITIES from the list
-            let item = new St.Label({text: ' ', style_class:'popup-menu-item', reactive: false});
-            this.classContainer.add(item);
+            if (paintCategories) {
+                let item = new St.Label({text: ' ', style_class:'popup-menu-item', reactive: false});
+                this.classContainer.add(item);
+            }
             
-            item = new St.Label({text: _("Activities"), style_class:'popup-menu-item', reactive: true});
-            this.mainContainer.add(item, {row: 2, col: 0, x_fill: false, y_fill: false, y_expand: false, x_align: St.Align.START, y_align: St.Align.END});
+            let item = new St.Label({text: _("Activities"), style_class:'popup-menu-item', reactive: true});
             item._customEventId=item.connect('button-release-event',Lang.bind(this,this._onActivitiesClick));
             item._customDestroyId=item.connect('destroy',Lang.bind(this,this._onDestroyActor));
+
+            this.baseContainer.add(item, {row: 0, col: 0, x_fill: false, y_fill: false, x_expand: false, y_expand: false, x_align: St.Align.START, y_align: St.Align.END});
+            this.baseContainer.add(pages, {row: 0, col: 1, x_fill: false, y_fill: false, x_expand: true, y_expand: false, x_align: St.Align.MIDDLE, y_align: St.Align.END});
+        } else {
+            this.baseContainer.add(pages, {row: 0, col: 0, x_fill: false, y_fill: false, y_expand: false, x_align: St.Align.MIDDLE, y_align: St.Align.END});
         }
 
         let ppal = new SlingShotItem(this.mainContainer,'',{reactive:false});
@@ -437,7 +470,7 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onSetButtonStyle: function() {
-        switch(settings.get_enum('menu-button')) {
+        switch(this._settings.get_enum('menu-button')) {
         case 0: // text and icon
             this.buttonIcon.show();
             this.buttonLabel.show();
@@ -454,7 +487,7 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onSetActivitiesStatus: function() {
-        this._setActivitiesNoVisible(settings.get_boolean('show-activities'));
+        this._setActivitiesNoVisible(this._settings.get_boolean('show-activities'));
     },
 
     _setActivitiesNoVisible: function(mode) {
@@ -479,7 +512,7 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onSetActivitiesHotspot: function() {
-        this._setActivitiesNoHotspot(settings.get_boolean("disable-activities-hotspot"));
+        this._setActivitiesNoHotspot(this._settings.get_boolean("disable-activities-hotspot"));
     },
 
     _setActivitiesNoHotspot: function(mode) {
@@ -520,6 +553,5 @@ function disable() {
 }
 
 function init() {
-    settings = Lib.getSettings(SCHEMA);
 }
 
