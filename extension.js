@@ -259,9 +259,6 @@ const ApplicationsButton = new Lang.Class({
         this._currentHeight=1.0;
         this._currentIconsWidth=1.0;
         this._currentIconsHeight=1.0;
-        this.currentPageVisibleInMenu=0;
-        this._iconsPerColumn=3;
-        this._iconsPerRow=4;
         this._display();
         return (false);
     },
@@ -270,7 +267,7 @@ const ApplicationsButton = new Lang.Class({
     _menuSizeChanged : function(actor,event) {
 
         actor._customRealized=true;
-        if ((this.iconsContainer._customRealized==false) || (this.classContainer._customRealized==false)) {
+        if ((this.iconsContainer._customRealized==false) || (this.classContainer._customRealized==false) || (this.searchContainer._customRealized==false)) {
             return;
         }
 
@@ -299,7 +296,6 @@ const ApplicationsButton = new Lang.Class({
         this.mainContainer = new St.Table({homogeneous: false});
         this.baseContainer = new St.Table({homogeneous: false});
         this.searchContainer = new St.BoxLayout({vertical: false});
-        //this.searchContainer = new St.Table({homogeneous: false});
 
         this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
         this.iconsContainer = new St.Table({ homogeneous: true});
@@ -358,6 +354,10 @@ const ApplicationsButton = new Lang.Class({
         this.iconsContainer._customRealized=false;
         this.iconsContainer._customEventId=this.iconsContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
         this.iconsContainer._customDestroyId=this.iconsContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
+
+        this.searchContainer._customRealized=false;
+        this.searchContainer._customEventId=this.searchContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
+        this.searchContainer._customDestroyId=this.searchContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
 
         var iconsPerPage=this._iconsPerRow*this._iconsPerColumn;
         if (paintCategories) {
@@ -486,17 +486,29 @@ const ApplicationsButton = new Lang.Class({
         }
     },
 
+    _changeShape : function() {
+    
+        this._currentWidth=1.0;
+        this._currentHeight=1.0;
+        this._currentIconsWidth=1.0;
+        this._currentIconsHeight=1.0;
+        this._iconsPerRow=4;
+        this._iconsPerColumn=3;
+        this.currentPageVisibleInMenu=0;
+        this._display();
+    },
+
     _onCategoriesClick : function(actor,event) {
         if (false==this._settings.get_boolean('show-categories')) {
             this._settings.set_boolean('show-categories',true);
-            this._repaintMenu();
+            this._changeShape();
         }
     },
 
     _onIconsClick : function(actor,event) {
         if (true==this._settings.get_boolean('show-categories')) {
             this._settings.set_boolean('show-categories',false);
-            this._repaintMenu();
+            this._changeShape();
         }
     },
 
