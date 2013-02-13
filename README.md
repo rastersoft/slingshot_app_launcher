@@ -22,6 +22,7 @@ History of versions:
        Allows to customize the style of the main button (with/out icon
        or text)
     9: Allows to choose between categories mode or pure icon mode
+       Now highlights all the possible buttons
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
