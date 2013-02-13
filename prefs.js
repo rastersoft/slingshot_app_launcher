@@ -17,10 +17,13 @@ function init() {
 function buildPrefsWidget() {
     let frame = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, border_width: 10, spacing: 10});
     
-    let panel_switch = buildSwitcher('show-activities', "Put the Activities button inside Slingshot");
+    let panel_switch = buildSwitcher('hide-activities', "Put the Activities button inside Slingshot");
     frame.add(panel_switch);
     
     let panel_switch = buildSwitcher('disable-activities-hotspot', "Disable the Activities (top left) hotspot");
+    frame.add(panel_switch);
+    
+    let panel_switch = buildSwitcher('show-categories', "Clasify applications in categories");
     frame.add(panel_switch);
     
     let prueba = buildSelect('menu-button',"Style for the main button");

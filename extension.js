@@ -217,7 +217,8 @@ const ApplicationsButton = new Lang.Class({
                 container2._customEnterId=container2.connect('enter-event',Lang.bind(this,this._onAppEnter));
                 container2._customLeaveId=container2.connect('leave-event',Lang.bind(this,this._onAppLeave));
                 container2._customDestroyId=container2.connect('destroy',Lang.bind(this,this._onAppDestroy));
-                container2._customPseudoClass='active';
+                container2._customPseudoClassActive='active';
+                container2._customPseudoClassInactive='';
 
                 container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
 
@@ -252,6 +253,9 @@ const ApplicationsButton = new Lang.Class({
         delete this._updateRegionIdle;
         this._currentWidth=1.0;
         this._currentHeight=1.0;
+        this.currentPageVisibleInMenu=0;
+        this._iconsPerColumn=3;
+        this._iconsPerRow=4;
         this._display();
         return (false);
     },
@@ -328,11 +332,16 @@ const ApplicationsButton = new Lang.Class({
                 let item = new St.Label({text: categoryName, style_class:'popup-menu-item', reactive: true});
                 item._group_name=categoryName;
                 item._customEventId=item.connect('button-release-event',Lang.bind(this,this._onCategoryClick));
-                item._customDestroyId=item.connect('destroy',Lang.bind(this,this._onDestroyActor));
+                item._customEnterId=item.connect('enter-event',Lang.bind(this,this._onAppEnter));
+                item._customLeaveId=item.connect('leave-event',Lang.bind(this,this._onAppLeave));
+                item._customDestroyId=item.connect('destroy',Lang.bind(this,this._onAppDestroy));
+                item._customPseudoClassActive='active';
+                item._customPseudoClassInactive='';
                 this.classContainer.add(item);
 
                 if (categoryName==this.currentSelection) {
                     item.set_style_pseudo_class('active');
+                    item._customPseudoClassInactive='active';
                     this._paintIcons(this.iconsContainer,dItem.dirChilds,this._iconsPerRow);
                 }
             }
@@ -354,7 +363,15 @@ const ApplicationsButton = new Lang.Class({
 
                 page_label._page_assigned=i;
                 page_label._customEventId=page_label.connect('button-release-event',Lang.bind(this,this._onPageClick));
-                page_label._customDestroyId=page_label.connect('destroy',Lang.bind(this,this._onDestroyActor));
+                page_label._customEnterId=page_label.connect('enter-event',Lang.bind(this,this._onAppEnter));
+                page_label._customLeaveId=page_label.connect('leave-event',Lang.bind(this,this._onAppLeave));
+                page_label._customDestroyId=page_label.connect('destroy',Lang.bind(this,this._onAppDestroy));
+                page_label._customPseudoClassActive='active';
+                if (i==this.currentPageVisibleInMenu) {
+                    page_label._customPseudoClassInactive='active';
+                } else {
+                    page_label._customPseudoClassInactive='';
+                }
                 pages.add(page_label, {y_align:St.Align.START});
                 this.pagesVisibleInMenu+=1;
             }
@@ -378,8 +395,11 @@ const ApplicationsButton = new Lang.Class({
             
             let item = new St.Label({text: _("Activities"), style_class:'popup-menu-item', reactive: true});
             item._customEventId=item.connect('button-release-event',Lang.bind(this,this._onActivitiesClick));
-            item._customDestroyId=item.connect('destroy',Lang.bind(this,this._onDestroyActor));
-
+            item._customEnterId=item.connect('enter-event',Lang.bind(this,this._onAppEnter));
+            item._customLeaveId=item.connect('leave-event',Lang.bind(this,this._onAppLeave));
+            item._customDestroyId=item.connect('destroy',Lang.bind(this,this._onAppDestroy));
+            item._customPseudoClassActive='active';
+            item._customPseudoClassInactive='';
             this.baseContainer.add(item, {row: 0, col: 0, x_fill: false, y_fill: false, x_expand: false, y_expand: false, x_align: St.Align.START, y_align: St.Align.END});
             this.baseContainer.add(pages, {row: 0, col: 1, x_fill: false, y_fill: false, x_expand: true, y_expand: false, x_align: St.Align.MIDDLE, y_align: St.Align.END});
         } else {
@@ -444,11 +464,11 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onAppEnter : function(actor,event) {
-        actor.set_style_pseudo_class(actor._customPseudoClass);
+        actor.set_style_pseudo_class(actor._customPseudoClassActive);
     },
 
     _onAppLeave : function(actor,event) {
-        actor.set_style_pseudo_class('');
+        actor.set_style_pseudo_class(actor._customPseudoClassInactive);
     },
 
     _onAppDestroy : function(actor,event) {
@@ -464,6 +484,11 @@ const ApplicationsButton = new Lang.Class({
     },
     
     _onChangedSetting: function(key) {
+        this._currentWidth=1.0;
+        this._currentHeight=1.0;
+        this.currentPageVisibleInMenu=0;
+        this._iconsPerColumn=3;
+        this._iconsPerRow=4;
         this._onSetActivitiesHotspot();
         this._onSetActivitiesStatus();
         this._onSetButtonStyle();
@@ -487,7 +512,7 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onSetActivitiesStatus: function() {
-        this._setActivitiesNoVisible(this._settings.get_boolean('show-activities'));
+        this._setActivitiesNoVisible(this._settings.get_boolean('hide-activities'));
     },
 
     _setActivitiesNoVisible: function(mode) {
