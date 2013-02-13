@@ -21,6 +21,7 @@ History of versions:
        Now doesn't show empty pages
        Allows to customize the style of the main button (with/out icon
        or text)
+    9: Allows to choose between categories mode or pure icon mode
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com

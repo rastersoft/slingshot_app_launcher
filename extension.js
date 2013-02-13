@@ -29,6 +29,7 @@
        Now doesn't show empty pages
        Allows to customize the style of the main button (with/out icon
        or text)
+    9: Allows to choose between categories mode or pure icon mode
     
 */
 
@@ -84,6 +85,8 @@ const ApplicationsButton = new Lang.Class({
         this._activitiesNoVisible=false;
         this._currentWidth=1.0;
         this._currentHeight=1.0;
+        this._currentIconsWidth=1.0;
+        this._currentIconsHeight=1.0;
 
         this._settings = Lib.getSettings(SCHEMA);
 
@@ -253,6 +256,8 @@ const ApplicationsButton = new Lang.Class({
         delete this._updateRegionIdle;
         this._currentWidth=1.0;
         this._currentHeight=1.0;
+        this._currentIconsWidth=1.0;
+        this._currentIconsHeight=1.0;
         this.currentPageVisibleInMenu=0;
         this._iconsPerColumn=3;
         this._iconsPerRow=4;
@@ -292,27 +297,62 @@ const ApplicationsButton = new Lang.Class({
         let paintCategories = this._settings.get_boolean('show-categories');
         this.mainContainer = new St.Table({homogeneous: false});
         this.baseContainer = new St.Table({homogeneous: false});
+        this.searchContainer = new St.BoxLayout({vertical: false});
+        //this.searchContainer = new St.Table({homogeneous: false});
 
         this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
         this.iconsContainer = new St.Table({ homogeneous: true});
         this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         
-        let icon_col;
+        let iconCol;
+        if(paintCategories) {
+            iconCol=1;
+        } else {
+            iconCol=0;
+        }
+
+        let icon1 = new St.Icon({icon_name: 'categories-symbolic',icon_size: 24});
+        let iconBin1=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
+        iconBin1.add(icon1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
+        let icon2 = new St.Icon({icon_name: 'icons-symbolic',icon_size: 24});
+        let iconBin2=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
+        iconBin2.add(icon2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
+        this.searchContainer.add(iconBin1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
+        this.searchContainer.add(iconBin2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
+
+        iconBin1._customEventId=iconBin1.connect('button-release-event',Lang.bind(this,this._onCategoriesClick));
+        iconBin1._customEnterId=iconBin1.connect('enter-event',Lang.bind(this,this._onAppEnter));
+        iconBin1._customLeaveId=iconBin1.connect('leave-event',Lang.bind(this,this._onAppLeave));
+        iconBin1._customDestroyId=iconBin1.connect('destroy',Lang.bind(this,this._onAppDestroy));
+        iconBin1._customPseudoClassActive='active';
+        iconBin1._customPseudoClassInactive='';
+
+        iconBin2._customEventId=iconBin2.connect('button-release-event',Lang.bind(this,this._onIconsClick));
+        iconBin2._customEnterId=iconBin2.connect('enter-event',Lang.bind(this,this._onAppEnter));
+        iconBin2._customLeaveId=iconBin2.connect('leave-event',Lang.bind(this,this._onAppLeave));
+        iconBin2._customDestroyId=iconBin2.connect('destroy',Lang.bind(this,this._onAppDestroy));
+        iconBin2._customPseudoClassActive='active';
+        iconBin2._customPseudoClassInactive='';
+
+
+        this.mainContainer.add(this.searchContainer,{row: 0, col:0, col_span: iconCol+1, x_fill: true, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         
         if (paintCategories) {
             this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
-            this.mainContainer.add(this.classContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
+            this.mainContainer.add(this.classContainer, {row: 1, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
             this.classContainer._customRealized=false;
             this.classContainer._customEventId=this.classContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
             this.classContainer._customDestroyId=this.classContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
-            icon_col=1;
         } else {
             this.classContainer = {_customRealized:true, width:0, height:0};
-            icon_col=0;
         }
+
+
         
-        this.mainContainer.add(this.globalContainer, {row: 0, col:icon_col, x_fill:true, y_fill: true, x_align: St.Align.START, y_align: St.Align.START});
-        this.mainContainer.add(this.baseContainer,{row: 1, col:0, col_span: icon_col+1, x_fill: true, y_fill: false, x_align: St.Align.START, y_align: St.Align.END});
+        this.mainContainer.add(this.globalContainer, {row: 1, col:iconCol, x_fill:true, y_fill: true, x_align: St.Align.START, y_align: St.Align.START});
+        
+        
+        this.mainContainer.add(this.baseContainer,{row: 2, col:0, col_span: iconCol+1, x_fill: true, y_fill: false, x_align: St.Align.START, y_align: St.Align.END});
 
         this.iconsContainer._customRealized=false;
         this.iconsContainer._customEventId=this.iconsContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
@@ -419,6 +459,14 @@ const ApplicationsButton = new Lang.Class({
             this._currentHeight=this.mainContainer.height;
         }
         this.mainContainer.height=this._currentHeight;
+        if (this._currentIconsWidth<=this.iconsContainer.width) {
+            this._currentIconsWidth=this.iconsContainer.width;
+        }
+        this.iconsContainer.width=this._currentIconsWidth;
+        if (this._currentIconsHeight<=this.iconsContainer.height) {
+            this._currentIconsHeight=this.iconsContainer.height;
+        }
+        this.iconsContainer.height=this._currentIconsHeight;
     },
 
     _onActivitiesClick: function(actor,event) {
@@ -434,6 +482,20 @@ const ApplicationsButton = new Lang.Class({
         if ((direction == Clutter.ScrollDirection.UP) && (this.currentPageVisibleInMenu>0)) {
             this.currentPageVisibleInMenu-=1;
             this._display();
+        }
+    },
+
+    _onCategoriesClick : function(actor,event) {
+        if (false==this._settings.get_boolean('show-categories')) {
+            this._settings.set_boolean('show-categories',true);
+            this._repaintMenu();
+        }
+    },
+
+    _onIconsClick : function(actor,event) {
+        if (true==this._settings.get_boolean('show-categories')) {
+            this._settings.set_boolean('show-categories',false);
+            this._repaintMenu();
         }
     },
 
@@ -486,6 +548,8 @@ const ApplicationsButton = new Lang.Class({
     _onChangedSetting: function(key) {
         this._currentWidth=1.0;
         this._currentHeight=1.0;
+        this._currentIconsWidth=1.0;
+        this._currentIconsHeight=1.0;
         this.currentPageVisibleInMenu=0;
         this._iconsPerColumn=3;
         this._iconsPerRow=4;
@@ -577,6 +641,10 @@ function disable() {
     SlingShotButton.destroy();
 }
 
-function init() {
+function init(extensionMeta) {
+
+    let theme = imports.gi.Gtk.IconTheme.get_default();
+    theme.append_search_path(extensionMeta.path + "/icons");
+
 }
 
