@@ -31,6 +31,7 @@
        or text)
     9: Allows to choose between categories mode or pure icon mode
        Now highlights all the possible buttons
+   10: Keeps the window size even when changing the mode
     
 */
 
@@ -84,17 +85,21 @@ const ApplicationsButton = new Lang.Class({
         this.iconsContainer=null;
         this.icon_counter=0;
         this._activitiesNoVisible=false;
-        this._currentWidth=1.0;
-        this._currentHeight=1.0;
+        this._baseWidth=1.0;
+        this._baseHeight=1.0;
+        this._baseIconsPerRow = 4;
+        this._baseIconsPerColumn = 3;
+
         this._currentIconsWidth=1.0;
         this._currentIconsHeight=1.0;
+        this._currentWidth=this._baseWidth;
+        this._currentHeight=this._baseHeight;
+        this._iconsPerRow = this._baseIconsPerRow;
+        this._iconsPerColumn = this._baseIconsPerColumn;
 
         this._settings = Lib.getSettings(SCHEMA);
 
         this._monitor = LayoutManager.monitors[LayoutManager.primaryIndex];
-
-        this._iconsPerRow = 4;
-        this._iconsPerColumn = 3;
 
         this.parent(0.0,'SlingShot');
         this.actor.add_style_class_name('panel-status-button');
@@ -255,8 +260,8 @@ const ApplicationsButton = new Lang.Class({
 
         Mainloop.source_remove(this._updateRegionIdle);
         delete this._updateRegionIdle;
-        this._currentWidth=1.0;
-        this._currentHeight=1.0;
+        this._currentWidth=this._baseWidth;
+        this._currentHeight=this._baseHeight;
         this._currentIconsWidth=1.0;
         this._currentIconsHeight=1.0;
         this._display();
@@ -299,7 +304,7 @@ const ApplicationsButton = new Lang.Class({
 
         this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
         this.iconsContainer = new St.Table({ homogeneous: true});
-        this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:false, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
+        this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:true, y_fill: true, x_align: St.Align.START, y_align: St.Align.START});
         
         let iconCol;
         if(paintCategories) {
@@ -487,13 +492,14 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _changeShape : function() {
-    
-        this._currentWidth=1.0;
-        this._currentHeight=1.0;
+
+        this._baseWidth=this._currentWidth;
+        this._baseHeight=this._currentHeight;
         this._currentIconsWidth=1.0;
         this._currentIconsHeight=1.0;
-        this._iconsPerRow=4;
-        this._iconsPerColumn=3;
+        this._baseIconsPerRow = this._IconsPerRow;
+        this._baseIconsPerColumn = this._IconsPerColumn;
+
         this.currentPageVisibleInMenu=0;
         this._display();
     },
@@ -559,13 +565,8 @@ const ApplicationsButton = new Lang.Class({
     },
     
     _onChangedSetting: function(key) {
-        this._currentWidth=1.0;
-        this._currentHeight=1.0;
         this._currentIconsWidth=1.0;
         this._currentIconsHeight=1.0;
-        this.currentPageVisibleInMenu=0;
-        this._iconsPerColumn=3;
-        this._iconsPerRow=4;
         this._onSetActivitiesHotspot();
         this._onSetActivitiesStatus();
         this._onSetButtonStyle();

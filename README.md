@@ -23,6 +23,7 @@ History of versions:
        or text)
     9: Allows to choose between categories mode or pure icon mode
        Now highlights all the possible buttons
+   10: Keeps the window size even when changing the mode
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
