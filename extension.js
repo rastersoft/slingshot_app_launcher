@@ -608,10 +608,7 @@ const ApplicationsButton = new Lang.Class({
     _onOpenStateChanged: function(menu, open) {
         this._searchText = "";
         this.parent(menu,open);
-        if (open) {
-            this.menu.actor.grab_key_focus();
-            this._display();
-        }
+        this._display();
     },
 
     _onChangedSetting: function(key) {
