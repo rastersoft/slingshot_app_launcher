@@ -89,15 +89,15 @@ const ApplicationsButton = new Lang.Class({
         this._baseHeight=1.0;
         this._baseIconsPerRow = 4;
         this._baseIconsPerColumn = 3;
+        this._appSearch=[];
 
-        this._currentIconsWidth=1.0;
-        this._currentIconsHeight=1.0;
         this._currentWidth=this._baseWidth;
         this._currentHeight=this._baseHeight;
         this._iconsPerRow = this._baseIconsPerRow;
         this._iconsPerColumn = this._baseIconsPerColumn;
 
         this._settings = Lib.getSettings(SCHEMA);
+        this._searchText = "";
 
         this._monitor = LayoutManager.monitors[LayoutManager.primaryIndex];
 
@@ -119,7 +119,60 @@ const ApplicationsButton = new Lang.Class({
         this._installedChangedId = this._appSys.connect('installed-changed', Lang.bind(this, this._refresh));
         this._fillCategories();
 
+        this.menu.actor.connect('key-press-event', Lang.bind(this,this._keyPressed2));
+
         this._display();
+    },
+
+    _keyPressed2 : function(actor, event) {
+
+        let modifiers = event.get_state();
+        let symbol = event.get_key_symbol();
+        let refreshSearch=false;
+        let retval=false;
+
+        if (symbol == Clutter.BackSpace) {
+            if (this._searchText.length>0) {
+                this._searchText=this._searchText.substr(0,this._searchText.length-1);
+                refreshSearch=true;
+            }
+            retval=true;
+        } else if (symbol == Clutter.Tab) {
+            if ((this._searchText!="")&&(this._appSearch.length>0)) {
+                let tmpApp = this._appSearch[0];
+                this._appSearch.splice(0,1);
+                this._appSearch.push(tmpApp);
+                this._display();
+            }
+            retval=true;
+        } else if (symbol == Clutter.Return) {
+            if ((this._searchText!="")&&(this._appSearch.length>0)) {
+                this._appSearch[0].open_new_window(-1);
+                this.menu.close();
+            }
+            retval=true;
+        } else {
+            let letter=Clutter.keysym_to_unicode(symbol);
+            if (letter!=0) {
+                this._searchText+=String.fromCharCode(letter);
+                refreshSearch=true;
+                retval=true;
+            }
+        }
+
+        if (refreshSearch) {
+            this._appSearch=[];
+            for(var item in this._appList) {
+                let app=this._appList[item];
+                let texto = app.get_name();
+                if (texto.toLowerCase().indexOf(this._searchText.toLowerCase())!=-1) {
+                    this._appSearch.push(app);
+                }
+            }
+            this._appSearch.sort(this._sortApps);
+            this._display();
+        }
+        return retval;
     },
 
     destroy: function() {
@@ -150,10 +203,10 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _fillCategories: function() {
-    
+
         this._appList=[];
         this._appClass=[];
-    
+
         let tree = this._appSys.get_tree();
         let root = tree.get_root_directory();
 
@@ -174,7 +227,7 @@ const ApplicationsButton = new Lang.Class({
         }
         this._appList.sort(this._sortApps);
     },
-    
+
     _fillCategories2: function(dir,childrens) {
 
         var iter = dir.iter();
@@ -262,12 +315,9 @@ const ApplicationsButton = new Lang.Class({
         delete this._updateRegionIdle;
         this._currentWidth=this._baseWidth;
         this._currentHeight=this._baseHeight;
-        this._currentIconsWidth=1.0;
-        this._currentIconsHeight=1.0;
         this._display();
         return (false);
     },
-
 
     _menuSizeChanged : function(actor,event) {
 
@@ -294,18 +344,23 @@ const ApplicationsButton = new Lang.Class({
         }
     },
 
-
     _display : function() {
     
         let paintCategories = this._settings.get_boolean('show-categories');
+        let paintSearch=false;
+        if (this._searchText!="") {
+            paintCategories=false;
+            paintSearch=true;
+        }
         this.mainContainer = new St.Table({homogeneous: false});
         this.baseContainer = new St.Table({homogeneous: false});
         this.searchContainer = new St.BoxLayout({vertical: false});
+        this.searchLabel = new St.Label({text: this._searchText});
 
         this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
         this.iconsContainer = new St.Table({ homogeneous: true});
-        this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:true, y_fill: true, x_align: St.Align.START, y_align: St.Align.START});
-        
+        this.globalContainer.add(this.iconsContainer, {row: 0, col:0, x_fill:true, y_fill: true, x_expand: true, y_expand:true, x_align: St.Align.START, y_align: St.Align.START});
+
         let iconCol;
         if(paintCategories) {
             iconCol=1;
@@ -319,8 +374,9 @@ const ApplicationsButton = new Lang.Class({
         let icon2 = new St.Icon({icon_name: 'icons-symbolic',icon_size: 24});
         let iconBin2=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
         iconBin2.add(icon2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
-        this.searchContainer.add(iconBin1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
-        this.searchContainer.add(iconBin2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
+        this.searchContainer.add(iconBin1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+        this.searchContainer.add(iconBin2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+        this.searchContainer.add(this.searchLabel, {x_fill:true, y_fill: false,x_align: St.Align.END, y_align: St.Align.MIDDLE});
 
         iconBin1._customEventId=iconBin1.connect('button-release-event',Lang.bind(this,this._onCategoriesClick));
         iconBin1._customEnterId=iconBin1.connect('enter-event',Lang.bind(this,this._onAppEnter));
@@ -336,8 +392,7 @@ const ApplicationsButton = new Lang.Class({
         iconBin2._customPseudoClassActive='active';
         iconBin2._customPseudoClassInactive='';
 
-
-        this.mainContainer.add(this.searchContainer,{row: 0, col:0, col_span: iconCol+1, x_fill: true, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
+        this.mainContainer.add(this.searchContainer,{row: 0, col:0, col_span: iconCol+1, x_expand: true, y_expand: false, x_fill: true, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
         
         if (paintCategories) {
             this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
@@ -349,11 +404,8 @@ const ApplicationsButton = new Lang.Class({
             this.classContainer = {_customRealized:true, width:0, height:0};
         }
 
+        this.mainContainer.add(this.globalContainer, {row: 1, col:iconCol, x_fill:true, y_fill: true, x_expand: true, y_expand:true, x_align: St.Align.START, y_align: St.Align.START});
 
-        
-        this.mainContainer.add(this.globalContainer, {row: 1, col:iconCol, x_fill:true, y_fill: true, x_align: St.Align.START, y_align: St.Align.START});
-        
-        
         this.mainContainer.add(this.baseContainer,{row: 2, col:0, col_span: iconCol+1, x_fill: true, y_fill: false, x_align: St.Align.START, y_align: St.Align.END});
 
         this.iconsContainer._customRealized=false;
@@ -392,10 +444,14 @@ const ApplicationsButton = new Lang.Class({
                 }
             }
         } else {
-            this._paintIcons(this.iconsContainer,this._appList,this._iconsPerRow+1);
+            if (paintSearch) {
+                this._paintIcons(this.iconsContainer,this._appSearch,this._iconsPerRow+1);
+            } else {
+                this._paintIcons(this.iconsContainer,this._appList,this._iconsPerRow+1);
+            }
             iconsPerPage+=this._iconsPerColumn;
         }
-        
+
         let pages=new St.BoxLayout({vertical: false});
         if (this.iconCounter>iconsPerPage) {
             this.pagesVisibleInMenu=0;
@@ -465,14 +521,6 @@ const ApplicationsButton = new Lang.Class({
             this._currentHeight=this.mainContainer.height;
         }
         this.mainContainer.height=this._currentHeight;
-        if (this._currentIconsWidth<=this.iconsContainer.width) {
-            this._currentIconsWidth=this.iconsContainer.width;
-        }
-        this.iconsContainer.width=this._currentIconsWidth;
-        if (this._currentIconsHeight<=this.iconsContainer.height) {
-            this._currentIconsHeight=this.iconsContainer.height;
-        }
-        this.iconsContainer.height=this._currentIconsHeight;
     },
 
     _onActivitiesClick: function(actor,event) {
@@ -495,8 +543,6 @@ const ApplicationsButton = new Lang.Class({
 
         this._baseWidth=this._currentWidth;
         this._baseHeight=this._currentHeight;
-        this._currentIconsWidth=1.0;
-        this._currentIconsHeight=1.0;
         this._baseIconsPerRow = this._IconsPerRow;
         this._baseIconsPerColumn = this._IconsPerColumn;
 
@@ -560,13 +606,15 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onOpenStateChanged: function(menu, open) {
+        this._searchText = "";
         this.parent(menu,open);
-        this._display();
+        if (open) {
+            this.menu.actor.grab_key_focus();
+            this._display();
+        }
     },
-    
+
     _onChangedSetting: function(key) {
-        this._currentIconsWidth=1.0;
-        this._currentIconsHeight=1.0;
         this._onSetActivitiesHotspot();
         this._onSetActivitiesStatus();
         this._onSetButtonStyle();
@@ -635,7 +683,6 @@ const ApplicationsButton = new Lang.Class({
             Main.layoutManager._hotCorners.forEach(function(hotCorner) { hotCorner._corner.show(); });
         }
     }
-    
 });
 
 let SlingShotButton;
@@ -656,9 +703,7 @@ function disable() {
 }
 
 function init(extensionMeta) {
-
     let theme = imports.gi.Gtk.IconTheme.get_default();
     theme.append_search_path(extensionMeta.path + "/icons");
-
 }
 
