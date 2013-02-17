@@ -34,8 +34,9 @@
    10: Keeps the window size even when changing the mode
    11: Allows to search apps using the keyboard
        Better appearance
-   12: Opens the menu with the right windows key (left windows key still
+   12: Opens the menu with the Right Windows key (Left Windows key still
        goes to Overview mode)
+   13: Right Windows key shows AND closes the menu
     
 */
 
