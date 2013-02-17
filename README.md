@@ -29,6 +29,7 @@ History of versions:
    12: Opens the menu with the right windows key (left windows key still
        goes to Overview mode)
    13: Right Windows key shows AND closes the menu
+   14: Improved icons
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com

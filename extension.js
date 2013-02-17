@@ -37,6 +37,7 @@
    12: Opens the menu with the Right Windows key (Left Windows key still
        goes to Overview mode)
    13: Right Windows key shows AND closes the menu
+   14: Improved icons
     
 */
 
