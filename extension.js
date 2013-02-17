@@ -142,7 +142,9 @@ const ApplicationsButton = new Lang.Class({
         let refreshSearch=false;
         let retval=false;
 
-        if (symbol == Clutter.BackSpace) {
+        if (symbol == Clutter.Super_R) {
+            this.menu.close();
+        } else if (symbol == Clutter.BackSpace) {
             if (this._searchText.length>0) {
                 this._searchText=this._searchText.substr(0,this._searchText.length-1);
                 refreshSearch=true;
