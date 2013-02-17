@@ -32,6 +32,10 @@
     9: Allows to choose between categories mode or pure icon mode
        Now highlights all the possible buttons
    10: Keeps the window size even when changing the mode
+   11: Allows to search apps using the keyboard
+       Better appearance
+   12: Opens the menu with the right windows key (left windows key still
+       goes to Overview mode)
     
 */
 
@@ -119,12 +123,19 @@ const ApplicationsButton = new Lang.Class({
         this._installedChangedId = this._appSys.connect('installed-changed', Lang.bind(this, this._refresh));
         this._fillCategories();
 
-        this._keyPressEvent1=this.menu.actor.connect('key-press-event', Lang.bind(this,this._keyPressed2));
+        this._keyPressEvent1=this.menu.actor.connect('key-press-event', Lang.bind(this,this._keyPressed1));
+
+        global.display.add_keybinding('key-binding',this._settings,Meta.KeyBindingFlags.NONE, Lang.bind(this,this._keyPressed2));
 
         this._display();
     },
 
     _keyPressed2 : function(actor, event) {
+
+        this.menu.open();
+    },
+
+    _keyPressed1 : function(actor, event) {
 
         let modifiers = event.get_state();
         let symbol = event.get_key_symbol();
@@ -181,6 +192,7 @@ const ApplicationsButton = new Lang.Class({
         this._setActivitiesNoHotspot(false);
         this._appSys.disconnect(this._installedChangedId);
         this.menu.actor.disconnect(this._keyPressEvent1);
+        global.display.remove_keybinding('key-binding');
         this.parent();
     },
 

@@ -22,6 +22,11 @@
         <summary>Show categories in menu</summary>
         <description>Clasifies the applications in categories, instead of showing them all mixed.</description>
     </key>
+    <key type="as" name="key-binding">
+        <default>['Super_R']</default>
+        <summary>Key to show the menu</summary>
+        <description>Keybinding to expand and show the menu.</description>
+    </key>
     <key name="menu-button" enum="org.gnome.shell.extensions.slingshot_app_launcher.menu_button_enum">
       <default>"Icon and text"</default>
       <summary>Style for the main button</summary>

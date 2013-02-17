@@ -26,6 +26,8 @@ History of versions:
    10: Keeps the window size even when changing the mode
    11: Allows to search apps using the keyboard
        Better appearance
+   12: Opens the menu with the right windows key (left windows key still
+       goes to Overview mode)
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
