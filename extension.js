@@ -356,6 +356,7 @@ const ApplicationsButton = new Lang.Class({
         this.baseContainer = new St.Table({homogeneous: false});
         this.searchContainer = new St.BoxLayout({vertical: false});
         this.searchLabel = new St.Label({text: this._searchText});
+        this.upperContainer = new St.BoxLayout({vertical: false});
 
         this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
         this.iconsContainer = new St.Table({ homogeneous: true});
@@ -374,9 +375,17 @@ const ApplicationsButton = new Lang.Class({
         let icon2 = new St.Icon({icon_name: 'icons-symbolic',icon_size: 24});
         let iconBin2=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
         iconBin2.add(icon2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
-        this.searchContainer.add(iconBin1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
-        this.searchContainer.add(iconBin2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
-        this.searchContainer.add(this.searchLabel, {x_fill:true, y_fill: false,x_align: St.Align.END, y_align: St.Align.MIDDLE});
+        this.upperContainer.add(iconBin1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+        this.upperContainer.add(iconBin2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+        
+        let icon3 = new St.Icon({icon_name: 'edit-find-symbolic',icon_size: 24});
+        this.searchContainer.add(icon3, {x_fill:false, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+        this.searchContainer.add(this.searchLabel, {row: 0, col: 1,x_fill:true, y_fill: false, x_expand: true,y_expand: false, x_align: St.Align.END, y_align: St.Align.MIDDLE});
+        if (paintCategories) {
+            this.mainContainer.add(this.searchContainer, {row: 0, col: 1,x_fill:true, y_fill: false, x_expand: true,y_expand: false, x_align: St.Align.END, y_align: St.Align.MIDDLE});
+        } else {
+            this.upperContainer.add(this.searchContainer, {x_fill:true, y_fill: false, expand: true, x_align: St.Align.END, y_align: St.Align.MIDDLE});
+        }
 
         iconBin1._customEventId=iconBin1.connect('button-release-event',Lang.bind(this,this._onCategoriesClick));
         iconBin1._customEnterId=iconBin1.connect('enter-event',Lang.bind(this,this._onAppEnter));
@@ -392,7 +401,7 @@ const ApplicationsButton = new Lang.Class({
         iconBin2._customPseudoClassActive='active';
         iconBin2._customPseudoClassInactive='';
 
-        this.mainContainer.add(this.searchContainer,{row: 0, col:0, col_span: iconCol+1, x_expand: true, y_expand: false, x_fill: true, y_fill: false, x_align: St.Align.START, y_align: St.Align.START});
+        this.mainContainer.add(this.upperContainer,{row: 0, col:0, x_expand: true, y_expand: false, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
         
         if (paintCategories) {
             this.classContainer = new St.BoxLayout({vertical: true, style_class: 'slingshot_class_list'});
@@ -511,6 +520,27 @@ const ApplicationsButton = new Lang.Class({
         let ppal = new SlingShotItem(this.mainContainer,'',{reactive:false});
         this.menu.removeAll();
         this.menu.addMenuItem(ppal);
+        
+        let color = this.searchContainer.get_theme_node().get_foreground_color();
+        let red=color.red.toString(16);
+        let green=color.green.toString(16);
+        let blue=color.blue.toString(16);
+        if (red.length==1) {
+            red="0"+red;
+        }
+        if (green.length==1) {
+            green="0"+green;
+        }
+        if (blue.length==1) {
+            blue="0"+blue;
+        }
+        
+        let newStyle="border-color: #"+red+green+blue+"; border-width: 2px; border-radius: 5px;";
+        this.searchContainer.set_style(newStyle);
+
+        if (paintCategories) {
+            this.classContainer.set_style("border-color: #"+red+green+blue+"; border-top-width: 1px;border-right-width: 1px;");
+        }
 
         // These lines are to ensure that the menu and the icons keep always the maximum size needed
         if (this._currentWidth<=this.mainContainer.width) {
