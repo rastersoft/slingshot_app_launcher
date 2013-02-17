@@ -24,6 +24,8 @@ History of versions:
     9: Allows to choose between categories mode or pure icon mode
        Now highlights all the possible buttons
    10: Keeps the window size even when changing the mode
+   11: Allows to search apps using the keyboard
+       Better appearance
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com

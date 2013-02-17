@@ -119,7 +119,7 @@ const ApplicationsButton = new Lang.Class({
         this._installedChangedId = this._appSys.connect('installed-changed', Lang.bind(this, this._refresh));
         this._fillCategories();
 
-        this.menu.actor.connect('key-press-event', Lang.bind(this,this._keyPressed2));
+        this._keyPressEvent1=this.menu.actor.connect('key-press-event', Lang.bind(this,this._keyPressed2));
 
         this._display();
     },
@@ -180,6 +180,7 @@ const ApplicationsButton = new Lang.Class({
         this._setActivitiesNoVisible(false);
         this._setActivitiesNoHotspot(false);
         this._appSys.disconnect(this._installedChangedId);
+        this.menu.actor.disconnect(this._keyPressEvent1);
         this.parent();
     },
 
