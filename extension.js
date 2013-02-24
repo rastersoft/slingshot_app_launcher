@@ -365,15 +365,20 @@ const ApplicationsButton = new Lang.Class({
     
         let paintCategories = this._settings.get_boolean('show-categories');
         let paintSearch=false;
-        if (this._searchText!="") {
-            paintCategories=false;
-            paintSearch=true;
-        }
+
         this.mainContainer = new St.Table({homogeneous: false});
         this.baseContainer = new St.Table({homogeneous: false});
         this.searchContainer = new St.BoxLayout({vertical: false});
         this.searchLabel = new St.Label({text: this._searchText});
         this.upperContainer = new St.BoxLayout({vertical: false});
+
+        if (this._searchText!="") {
+            paintCategories=false;
+            paintSearch=true;
+        } else {
+        	   this.searchContainer.hide();
+        }
+
 
         this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
         this.iconsContainer = new St.Table({ homogeneous: true});
