@@ -397,11 +397,15 @@ const ApplicationsButton = new Lang.Class({
         let icon2 = new St.Icon({icon_name: 'icons-symbolic',icon_size: 24});
         let iconBin2=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
         iconBin2.add(icon2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
+        let icon3 = new St.Icon({icon_name: 'slingshot-preferences-symbolic',icon_size: 24});
+        let iconBin3=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
+        iconBin3.add(icon3, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
         this.upperContainer.add(iconBin1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
         this.upperContainer.add(iconBin2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+        this.upperContainer.add(iconBin3, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
         
-        let icon3 = new St.Icon({icon_name: 'edit-find-symbolic',icon_size: 24});
-        this.searchContainer.add(icon3, {x_fill:false, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+        let icon4 = new St.Icon({icon_name: 'edit-find-symbolic',icon_size: 24});
+        this.searchContainer.add(icon4, {x_fill:false, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
         this.searchContainer.add(this.searchLabel, {row: 0, col: 1,x_fill:true, y_fill: false, x_expand: true,y_expand: false, x_align: St.Align.END, y_align: St.Align.MIDDLE});
         if (paintCategories) {
             this.mainContainer.add(this.searchContainer, {row: 0, col: 1,x_fill:true, y_fill: false, x_expand: true,y_expand: false, x_align: St.Align.END, y_align: St.Align.MIDDLE});
@@ -422,6 +426,13 @@ const ApplicationsButton = new Lang.Class({
         iconBin2._customDestroyId=iconBin2.connect('destroy',Lang.bind(this,this._onAppDestroy));
         iconBin2._customPseudoClassActive='active';
         iconBin2._customPseudoClassInactive='';
+
+        iconBin3._customEventId=iconBin3.connect('button-release-event',Lang.bind(this,this._onSettingsClick));
+        iconBin3._customEnterId=iconBin3.connect('enter-event',Lang.bind(this,this._onAppEnter));
+        iconBin3._customLeaveId=iconBin3.connect('leave-event',Lang.bind(this,this._onAppLeave));
+        iconBin3._customDestroyId=iconBin3.connect('destroy',Lang.bind(this,this._onAppDestroy));
+        iconBin3._customPseudoClassActive='active';
+        iconBin3._customPseudoClassInactive='';
 
         this.mainContainer.add(this.upperContainer,{row: 0, col:0, x_expand: true, y_expand: false, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
         
@@ -573,6 +584,19 @@ const ApplicationsButton = new Lang.Class({
             this._currentHeight=this.mainContainer.height;
         }
         this.mainContainer.height=this._currentHeight;
+    },
+    
+    _onSettingsClick: function(actor,event) {
+        let extension = imports.misc.extensionUtils.getCurrentExtension();
+        let metadata = extension.metadata;
+        let _appSys = Shell.AppSystem.get_default();
+        let _gsmPrefs = _appSys.lookup_app('gnome-shell-extension-prefs.desktop');
+        if (_gsmPrefs.get_state() == _gsmPrefs.SHELL_APP_STATE_RUNNING){
+            _gsmPrefs.activate();
+        } else {
+            _gsmPrefs.launch(global.display.get_current_time_roundtrip(),[metadata.uuid],-1,null);
+        }
+        this.menu.close();
     },
 
     _onActivitiesClick: function(actor,event) {
