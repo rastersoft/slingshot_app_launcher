@@ -375,10 +375,7 @@ const ApplicationsButton = new Lang.Class({
         if (this._searchText!="") {
             paintCategories=false;
             paintSearch=true;
-        } else {
-        	   this.searchContainer.hide();
         }
-
 
         this.globalContainer = new St.Table({ homogeneous: false, reactive: true});
         this.iconsContainer = new St.Table({ homogeneous: true});
@@ -391,48 +388,46 @@ const ApplicationsButton = new Lang.Class({
             iconCol=0;
         }
 
-        let icon1 = new St.Icon({icon_name: 'categories-symbolic',icon_size: 24});
-        let iconBin1=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
-        iconBin1.add(icon1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
-        let icon2 = new St.Icon({icon_name: 'icons-symbolic',icon_size: 24});
-        let iconBin2=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
-        iconBin2.add(icon2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
-        let icon3 = new St.Icon({icon_name: 'slingshot-preferences-symbolic',icon_size: 24});
-        let iconBin3=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
-        iconBin3.add(icon3, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
-        this.upperContainer.add(iconBin1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
-        this.upperContainer.add(iconBin2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
-        this.upperContainer.add(iconBin3, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+        if (paintSearch==false) {
+            let icon1 = new St.Icon({icon_name: 'categories-symbolic',icon_size: 24});
+            let iconBin1=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
+            iconBin1.add(icon1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
+            let icon2 = new St.Icon({icon_name: 'icons-symbolic',icon_size: 24});
+            let iconBin2=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
+            iconBin2.add(icon2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
+            let icon3 = new St.Icon({icon_name: 'slingshot-preferences-symbolic',icon_size: 24});
+            let iconBin3=new St.BoxLayout({reactive: true, style_class:'popup-menu-item'});
+            iconBin3.add(icon3, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.START});
+            this.upperContainer.add(iconBin1, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+            this.upperContainer.add(iconBin2, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+            this.upperContainer.add(iconBin3, {x_fill:true, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
         
-        let icon4 = new St.Icon({icon_name: 'edit-find-symbolic',icon_size: 24});
-        this.searchContainer.add(icon4, {x_fill:false, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
-        this.searchContainer.add(this.searchLabel, {row: 0, col: 1,x_fill:true, y_fill: false, x_expand: true,y_expand: false, x_align: St.Align.END, y_align: St.Align.MIDDLE});
-        if (paintCategories) {
-            this.mainContainer.add(this.searchContainer, {row: 0, col: 1,x_fill:true, y_fill: false, x_expand: true,y_expand: false, x_align: St.Align.END, y_align: St.Align.MIDDLE});
+            iconBin1._customEventId=iconBin1.connect('button-release-event',Lang.bind(this,this._onCategoriesClick));
+            iconBin1._customEnterId=iconBin1.connect('enter-event',Lang.bind(this,this._onAppEnter));
+            iconBin1._customLeaveId=iconBin1.connect('leave-event',Lang.bind(this,this._onAppLeave));
+            iconBin1._customDestroyId=iconBin1.connect('destroy',Lang.bind(this,this._onAppDestroy));
+            iconBin1._customPseudoClassActive='active';
+            iconBin1._customPseudoClassInactive='';
+
+            iconBin2._customEventId=iconBin2.connect('button-release-event',Lang.bind(this,this._onIconsClick));
+            iconBin2._customEnterId=iconBin2.connect('enter-event',Lang.bind(this,this._onAppEnter));
+            iconBin2._customLeaveId=iconBin2.connect('leave-event',Lang.bind(this,this._onAppLeave));
+            iconBin2._customDestroyId=iconBin2.connect('destroy',Lang.bind(this,this._onAppDestroy));
+            iconBin2._customPseudoClassActive='active';
+            iconBin2._customPseudoClassInactive='';
+
+            iconBin3._customEventId=iconBin3.connect('button-release-event',Lang.bind(this,this._onSettingsClick));
+            iconBin3._customEnterId=iconBin3.connect('enter-event',Lang.bind(this,this._onAppEnter));
+            iconBin3._customLeaveId=iconBin3.connect('leave-event',Lang.bind(this,this._onAppLeave));
+            iconBin3._customDestroyId=iconBin3.connect('destroy',Lang.bind(this,this._onAppDestroy));
+            iconBin3._customPseudoClassActive='active';
+            iconBin3._customPseudoClassInactive='';
         } else {
+            let icon4 = new St.Icon({icon_name: 'edit-find-symbolic',icon_size: 24});
+            this.searchContainer.add(icon4, {x_fill:false, y_fill: false,x_align: St.Align.START, y_align: St.Align.MIDDLE});
+            this.searchContainer.add(this.searchLabel, {row: 0, col: 1,x_fill:true, y_fill: false, x_expand: true,y_expand: false, x_align: St.Align.END, y_align: St.Align.MIDDLE});
             this.upperContainer.add(this.searchContainer, {x_fill:true, y_fill: false, expand: true, x_align: St.Align.END, y_align: St.Align.MIDDLE});
         }
-
-        iconBin1._customEventId=iconBin1.connect('button-release-event',Lang.bind(this,this._onCategoriesClick));
-        iconBin1._customEnterId=iconBin1.connect('enter-event',Lang.bind(this,this._onAppEnter));
-        iconBin1._customLeaveId=iconBin1.connect('leave-event',Lang.bind(this,this._onAppLeave));
-        iconBin1._customDestroyId=iconBin1.connect('destroy',Lang.bind(this,this._onAppDestroy));
-        iconBin1._customPseudoClassActive='active';
-        iconBin1._customPseudoClassInactive='';
-
-        iconBin2._customEventId=iconBin2.connect('button-release-event',Lang.bind(this,this._onIconsClick));
-        iconBin2._customEnterId=iconBin2.connect('enter-event',Lang.bind(this,this._onAppEnter));
-        iconBin2._customLeaveId=iconBin2.connect('leave-event',Lang.bind(this,this._onAppLeave));
-        iconBin2._customDestroyId=iconBin2.connect('destroy',Lang.bind(this,this._onAppDestroy));
-        iconBin2._customPseudoClassActive='active';
-        iconBin2._customPseudoClassInactive='';
-
-        iconBin3._customEventId=iconBin3.connect('button-release-event',Lang.bind(this,this._onSettingsClick));
-        iconBin3._customEnterId=iconBin3.connect('enter-event',Lang.bind(this,this._onAppEnter));
-        iconBin3._customLeaveId=iconBin3.connect('leave-event',Lang.bind(this,this._onAppLeave));
-        iconBin3._customDestroyId=iconBin3.connect('destroy',Lang.bind(this,this._onAppDestroy));
-        iconBin3._customPseudoClassActive='active';
-        iconBin3._customPseudoClassInactive='';
 
         this.mainContainer.add(this.upperContainer,{row: 0, col:0, x_expand: true, y_expand: false, x_fill: true, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
         
@@ -554,23 +549,24 @@ const ApplicationsButton = new Lang.Class({
         this.menu.removeAll();
         this.menu.addMenuItem(ppal);
         
-        let color = this.searchContainer.get_theme_node().get_foreground_color();
-        let red=color.red.toString(16);
-        let green=color.green.toString(16);
-        let blue=color.blue.toString(16);
-        if (red.length==1) {
-            red="0"+red;
-        }
-        if (green.length==1) {
-            green="0"+green;
-        }
-        if (blue.length==1) {
-            blue="0"+blue;
-        }
-        
-        let newStyle="border-color: #"+red+green+blue+"; border-width: 2px; border-radius: 5px;";
-        this.searchContainer.set_style(newStyle);
+            let color = this.upperContainer.get_theme_node().get_foreground_color();
+            let red=color.red.toString(16);
+            let green=color.green.toString(16);
+            let blue=color.blue.toString(16);
+            if (red.length==1) {
+                red="0"+red;
+            }
+            if (green.length==1) {
+                green="0"+green;
+            }
+            if (blue.length==1) {
+                blue="0"+blue;
+            }
 
+        if (paintSearch) {
+            let newStyle="border-color: #"+red+green+blue+"; border-width: 2px; border-radius: 5px;";
+            this.searchContainer.set_style(newStyle);
+        }
         if (paintCategories) {
             this.classContainer.set_style("border-color: #"+red+green+blue+"; border-top-width: 1px;border-right-width: 1px;");
         }
