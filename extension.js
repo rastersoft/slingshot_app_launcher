@@ -38,6 +38,8 @@
        goes to Overview mode)
    13: Right Windows key shows AND closes the menu
    14: Improved icons
+   15: Added configuration icon
+       Only shows the SEARCH box when typing
     
 */
 
