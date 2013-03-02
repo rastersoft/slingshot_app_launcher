@@ -23,18 +23,18 @@ History of versions:
        or text)
     9: Allows to choose between categories mode or pure icon mode
        Now highlights all the possible buttons
-   10: Keeps the window size even when changing the mode
-   11: Allows to search apps using the keyboard
+    10: Keeps the window size even when changing the mode
+    11: Allows to search apps using the keyboard
        Better appearance
-   12: Opens the menu with the right windows key (left windows key still
+    12: Opens the menu with the right windows key (left windows key still
        goes to Overview mode)
-   13: Right Windows key shows AND closes the menu
-   14: Improved icons
-   15: Added configuration icon
+    13: Right Windows key shows AND closes the menu
+    14: Improved icons
+    15: Added configuration icon
        Only shows the SEARCH box when typing
-   16: Allows to change the main button position in the top bar
+    16: Allows to change the main button position in the top bar
        Allows to change the hot key for opening the menu
-   17: The size adjustment works again
+    17: The size adjustment works again
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
