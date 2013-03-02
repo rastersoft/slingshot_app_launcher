@@ -42,6 +42,7 @@
        Only shows the SEARCH box when typing
    16: Allows to change the main button position in the top bar
        Allows to change the hot key for opening the menu
+   17: The size adjustment works again
     
 */
 
