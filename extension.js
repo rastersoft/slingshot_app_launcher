@@ -356,11 +356,11 @@ const ApplicationsButton = new Lang.Class({
         }
 
         let doRefresh=false;
-        if (((this.iconsContainer.width+this.classContainer.width)>((this._monitor.width*3)/4))&&(this._iconsPerRow>1)) {
+        if (((this.iconsContainer.width+this.classContainer.width)>((this._monitor.width*7)/8))&&(this._iconsPerRow>1)) {
             this._iconsPerRow-=1;
             doRefresh=true;
         }
-        if (((this.iconsContainer.height)>((this._monitor.height*3)/5))&&(this._iconsPerColumn>1)) {
+        if (((this.iconsContainer.height)>((this._monitor.height*4)/5))&&(this._iconsPerColumn>1)) {
             this._iconsPerColumn-=1;
             doRefresh=true;
         }
