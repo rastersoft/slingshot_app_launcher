@@ -347,7 +347,7 @@ const ApplicationsButton = new Lang.Class({
     _menuSizeChanged : function(actor,event) {
 
         actor._customRealized=true;
-        if ((this.iconsContainer._customRealized==false) || (this.classContainer._customRealized==false) || (this.searchContainer._customRealized==false)) {
+        if ((this.iconsContainer._customRealized==false) || (this.classContainer._customRealized==false)) {
             return;
         }
 
