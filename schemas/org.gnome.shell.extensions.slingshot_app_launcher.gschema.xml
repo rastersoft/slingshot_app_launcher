@@ -18,13 +18,18 @@
         <description>Disables the top left hotspot (that triggers the Activities mode).</description>
     </key>
     <key type="b" name="show-categories">
-        <default>false</default>
+        <default>true</default>
         <summary>Show categories in menu</summary>
         <description>Clasifies the applications in categories, instead of showing them all mixed.</description>
     </key>
+    <key type="b" name="show-first">
+        <default>true</default>
+        <summary>Show main button first in top bar</summary>
+        <description>When showing both Activities and Application button, put slingshot's button first.</description>
+    </key>
     <key type="as" name="key-binding">
         <default>['Super_R']</default>
-        <summary>Key to show the menu</summary>
+        <summary>Hotkeys to show the menu</summary>
         <description>Keybinding to expand and show the menu.</description>
     </key>
     <key name="menu-button" enum="org.gnome.shell.extensions.slingshot_app_launcher.menu_button_enum">

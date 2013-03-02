@@ -40,6 +40,8 @@
    14: Improved icons
    15: Added configuration icon
        Only shows the SEARCH box when typing
+   16: Allows to change the main button position in the top bar
+       Allows to change the hot key for opening the menu
     
 */
 
@@ -78,6 +80,8 @@ const SlingShotItem = new Lang.Class({
     }
 });
 
+var relaunchIdle = null;
+
 const ApplicationsButton = new Lang.Class({
     Name: 'SlingShot.ApplicationsButton',
     Extends: PanelMenu.Button,
@@ -105,6 +109,8 @@ const ApplicationsButton = new Lang.Class({
         this._iconsPerColumn = this._baseIconsPerColumn;
 
         this._settings = Lib.getSettings(SCHEMA);
+        this._showFirst = this._settings.get_boolean("show-first");
+
         this._searchText = "";
 
         this._monitor = LayoutManager.monitors[LayoutManager.primaryIndex];
@@ -689,6 +695,9 @@ const ApplicationsButton = new Lang.Class({
         this._onSetActivitiesHotspot();
         this._onSetActivitiesStatus();
         this._onSetButtonStyle();
+        if (this._showFirst != this._settings.get_boolean("show-first")) {
+            relaunchIdle = Mainloop.idle_add(tmp_relaunch,0);
+        }
     },
 
     _onSetButtonStyle: function() {
@@ -758,13 +767,27 @@ const ApplicationsButton = new Lang.Class({
 
 let SlingShotButton;
 
+function tmp_relaunch() {
+
+    if (relaunchIdle!=null) {
+        Mainloop.source_remove(relaunchIdle);
+    }
+    disable();
+    enable();
+}
+
 function enable() {
     SlingShotButton = new ApplicationsButton();
 
+    let pos=1;
+    if ((SlingShotButton._settings.get_boolean("show-first"))||(SlingShotButton._settings.get_boolean('hide-activities'))) {
+        pos=0;
+    }
+
     if (ShellVersion[1]>4) {
-        Main.panel.addToStatusArea('slingshot-menu', SlingShotButton, 0, 'left');
+        Main.panel.addToStatusArea('slingshot-menu', SlingShotButton, pos, 'left');
     } else {
-        Main.panel._leftBox.insert_child_at_index(SlingShotButton.actor,0);
+        Main.panel._leftBox.insert_child_at_index(SlingShotButton.actor,pos);
         Main.panel._menus.addMenu(SlingShotButton.menu);
     }
 }

@@ -32,6 +32,8 @@ History of versions:
    14: Improved icons
    15: Added configuration icon
        Only shows the SEARCH box when typing
+   16: Allows to change the main button position in the top bar
+       Allows to change the hot key for opening the menu
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
