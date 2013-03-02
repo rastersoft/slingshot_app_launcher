@@ -360,7 +360,7 @@ const ApplicationsButton = new Lang.Class({
             this._iconsPerRow-=1;
             doRefresh=true;
         }
-        if (((this.iconsContainer.height)>((this._monitor.height*4)/5))&&(this._iconsPerColumn>1)) {
+        if (((this.iconsContainer.height)>((this._monitor.height*4)/6))&&(this._iconsPerColumn>1)) {
             this._iconsPerColumn-=1;
             doRefresh=true;
         }
