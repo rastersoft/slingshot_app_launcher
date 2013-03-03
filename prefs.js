@@ -32,6 +32,9 @@ function buildPrefsWidget() {
 
     let panel_entry = buildArrayString('key-binding',"Hotkeys to show the menu");
     frame.add(panel_entry);
+    
+    let icon_size = buildSpinButton('icon-size',"Size for icons");
+    frame.add(icon_size);
 
     let prueba = buildSelect('menu-button',"Style for the main button");
     frame.add(prueba);
@@ -52,6 +55,22 @@ function buildSwitcher(key, labeltext) {
 
     hbox.pack_start(label, true, true, 0);
     hbox.add(switcher);
+
+    return hbox;
+}
+
+function buildSpinButton(key, labeltext) {
+    let hbox = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, spacing: 10 });
+
+    let label = new Gtk.Label({label: labeltext, xalign: 0 });
+    let adjust = new Gtk.Adjustment({lower: 16, upper: 128, value: settings.get_boolean(key), step_increment: 16});
+    let spin = new Gtk.SpinButton({digits: 0, adjustment: adjust});
+
+
+    settings.bind(key,adjust,'value',3);
+
+    hbox.pack_start(label, true, true, 0);
+    hbox.add(spin);
 
     return hbox;
 }

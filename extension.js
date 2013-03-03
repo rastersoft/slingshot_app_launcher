@@ -44,6 +44,7 @@
        Allows to change the hot key for opening the menu
    17: The size adjustment works again
    18: Added a RESET button for the hotkey configuration entry
+   19: Allows to set the icon size
     
 */
 
@@ -68,8 +69,6 @@ const LayoutManager = Main.layoutManager;
 
 const SCHEMA = 'org.gnome.shell.extensions.slingshot_app_launcher';
 
-const ICON_SIZE = 64;
-
 const SlingShotItem = new Lang.Class({
     Name: 'SlingShot.SlingShotItem',
     Extends: PopupMenu.PopupBaseMenuItem,
@@ -83,6 +82,9 @@ const SlingShotItem = new Lang.Class({
 });
 
 var relaunchIdle = null;
+
+const INIT_ICONS_PER_ROW = 4;
+const INIT_ICONS_PER_COLUMN = 3;
 
 const ApplicationsButton = new Lang.Class({
     Name: 'SlingShot.ApplicationsButton',
@@ -101,8 +103,8 @@ const ApplicationsButton = new Lang.Class({
         this._activitiesNoVisible=false;
         this._baseWidth=1.0;
         this._baseHeight=1.0;
-        this._baseIconsPerRow = 4;
-        this._baseIconsPerColumn = 3;
+        this._baseIconsPerRow = INIT_ICONS_PER_ROW;
+        this._baseIconsPerColumn = INIT_ICONS_PER_COLUMN;
         this._appSearch=[];
 
         this._currentWidth=this._baseWidth;
@@ -112,6 +114,7 @@ const ApplicationsButton = new Lang.Class({
 
         this._settings = Lib.getSettings(SCHEMA);
         this._showFirst = this._settings.get_boolean("show-first");
+        this._iconSize = this._settings.get_int("icon-size");
 
         this._searchText = "";
 
@@ -285,13 +288,20 @@ const ApplicationsButton = new Lang.Class({
         var maximumCounter=(this.currentPageVisibleInMenu+1)*iconsPerPage;
 
         var shownIcons=0;
+        label_width = this._iconSize+32;
+        if (label_width < 80) {
+            label_width=80;
+        }
+        if (label_width >120) {
+            label_width=120;
+        }
         for (var item in appList) {
             this.iconCounter++;
             if ((this.iconCounter>minimumCounter)&&(this.iconCounter<=maximumCounter)) {
                 shownIcons++;
                 let app=appList[item];
-                let icon = app.create_icon_texture(ICON_SIZE);
-                let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table'});
+                let icon = app.create_icon_texture(this._iconSize);
+                let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table',width: label_width});
 
                 let container2=new St.BoxLayout({vertical: true, reactive: true, style_class:'popup-menu-item'});
 
@@ -321,9 +331,9 @@ const ApplicationsButton = new Lang.Class({
 
         for (var counter2=shownIcons;counter2<iconsPerPage;counter2+=1) {
             let texto = new St.Label({text:" "});
-            texto.width=ICON_SIZE;
-            texto.height=ICON_SIZE;
-            let texto2 = new St.Label({text:" \n \n ", style_class: 'slingshot_table' });
+            texto.width=this._iconSize;
+            texto.height=this._iconSize;
+            let texto2 = new St.Label({text:" \n \n ", style_class: 'slingshot_table',width: label_width});
             let container2=new St.BoxLayout({vertical: true, style_class:'popup-menu-item'})
             container2.add(texto, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
             container2.add(texto2, {x_fill: true, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.START});
@@ -699,6 +709,17 @@ const ApplicationsButton = new Lang.Class({
         this._onSetButtonStyle();
         if (this._showFirst != this._settings.get_boolean("show-first")) {
             relaunchIdle = Mainloop.idle_add(tmp_relaunch,0);
+        }
+        if (this._iconSize != this._settings.get_int("icon-size")) {
+            this._iconSize = this._settings.get_int("icon-size");
+            this._baseWidth=1.0;
+            this._baseHeight=1.0;
+            this._baseIconsPerRow = INIT_ICONS_PER_ROW;
+            this._baseIconsPerColumn = INIT_ICONS_PER_COLUMN;
+            this._currentWidth=this._baseWidth;
+            this._currentHeight=this._baseHeight;
+            this._iconsPerRow = this._baseIconsPerRow;
+            this._iconsPerColumn = this._baseIconsPerColumn;
         }
     },
 

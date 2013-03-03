@@ -27,6 +27,11 @@
         <summary>Show main button first in top bar</summary>
         <description>When showing both Activities and Application button, put slingshot's button first.</description>
     </key>
+    <key type="i" name="icon-size">
+        <default>64</default>
+        <summary>Size for icons</summary>
+        <description>Specify the size for the icons in pixels.</description>
+    </key>
     <key type="as" name="key-binding">
         <default>['Super_R']</default>
         <summary>Hotkeys to show the menu</summary>

@@ -36,6 +36,7 @@ History of versions:
         Allows to change the hot key for opening the menu
     17: The size adjustment works again
     18: Added a RESET button for the hotkey configuration entry
+    19: Allows to set the icon size
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com

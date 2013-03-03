@@ -1,11 +1,12 @@
 
 .slingshot_table {
-    width: 100px;
     text-align: center;
     border-left: 0px;
     border-right: 0px;
     border-bottom: 0px;
     border-top: 0px;
+    margin: 0px;
+    padding: 0px;
 }
 
 .slingshot_class_list {
