@@ -87,18 +87,22 @@ function buildArrayString(key, labeltext) {
 
     let hbox = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, spacing: 10 });
     let label = new Gtk.Label({label: labeltext, xalign: 0 });
+    let button = new Gtk.Button({label: "Default"});
     let entry = new Gtk.Entry();
 
-    let data=settings.get_value(key);
-    let entries=data.get_strv();
-    let text='[';
-    for(let i in entries) {
-        if (i!=0) {
-            text+=',';
+    entry._customRefreshData = function () {
+        let data=settings.get_value(key);
+        let entries=data.get_strv();
+        let text='[';
+        for(let i in entries) {
+            if (i!=0) {
+                text+=',';
+            }
+            text+='\''+entries[i]+'\'';
         }
-        text+='\''+entries[i]+'\'';
+        text+=']';
+        entry.set_text(text);
     }
-    text+=']';
 
     entry._customChanged=entry.connect('focus-out-event', function(element,event) {
         let c_text=element.get_text();
@@ -119,8 +123,19 @@ function buildArrayString(key, labeltext) {
         element.disconnect(element._customChanged);
     });
 
-    entry.set_text(text);
+    button._customClicked=button.connect('clicked', function(element,event) {
+        settings.reset(key);
+        entry._customRefreshData();
+    });
+    button._customDestroy=button.connect('destroy', function(element,event) {
+        element.disconnect(element._customDestroy);
+        element.disconnect(element._customClicked);
+    });
+
+    entry._customRefreshData();
+    
     hbox.pack_start(label,true,true,0);
+    hbox.add(button);
     hbox.add(entry);
 
     return hbox;
