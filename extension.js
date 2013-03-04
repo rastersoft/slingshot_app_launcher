@@ -126,8 +126,8 @@ const ApplicationsButton = new Lang.Class({
         this.actor.add_actor(this._box);
 
         this.buttonIcon = new St.Icon({ gicon: null, style_class: 'system-status-icon' });
-        this._box.add_actor(this.buttonIcon);
         this.buttonIcon.icon_name='start-here';
+        this._box.add_actor(this.buttonIcon);
         this.buttonLabel = new St.Label({ text: _("Applications")});
         this._box.add_actor(this.buttonLabel);
 
@@ -190,7 +190,7 @@ const ApplicationsButton = new Lang.Class({
 
         if (refreshSearch) {
             this._appSearch=[];
-            for(var item in this._appList) {
+            for(let item in this._appList) {
                 let app=this._appList[item];
                 let texto = app.get_name();
                 if (texto.toLowerCase().indexOf(this._searchText.toLowerCase())!=-1) {
@@ -260,8 +260,8 @@ const ApplicationsButton = new Lang.Class({
 
     _fillCategories2: function(dir,childrens) {
 
-        var iter = dir.iter();
-        var nextType;
+        let iter = dir.iter();
+        let nextType;
 
         while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
             if (nextType == GMenu.TreeItemType.ENTRY) {
@@ -283,25 +283,27 @@ const ApplicationsButton = new Lang.Class({
         this.posy=0;
         this.iconCounter=0;
 
-        var iconsPerPage=width*this._iconsPerColumn;
-        var minimumCounter=this.currentPageVisibleInMenu*iconsPerPage;
-        var maximumCounter=(this.currentPageVisibleInMenu+1)*iconsPerPage;
+        let iconsPerPage=width*this._iconsPerColumn;
+        let minimumCounter=this.currentPageVisibleInMenu*iconsPerPage;
+        let maximumCounter=(this.currentPageVisibleInMenu+1)*iconsPerPage;
 
-        var shownIcons=0;
-        label_width = this._iconSize+32;
-        if (label_width < 80) {
-            label_width=80;
+        let shownIcons=0;
+        var labelWidth;
+        
+        labelWidth = this._iconSize+32;
+        if (labelWidth < 80) {
+            labelWidth=80;
         }
-        if (label_width >120) {
-            label_width=120;
+        if (labelWidth >120) {
+            labelWidth=120;
         }
-        for (var item in appList) {
+        for (let item in appList) {
             this.iconCounter++;
             if ((this.iconCounter>minimumCounter)&&(this.iconCounter<=maximumCounter)) {
                 shownIcons++;
                 let app=appList[item];
                 let icon = app.create_icon_texture(this._iconSize);
-                let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table',width: label_width});
+                let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table',width: labelWidth});
 
                 let container2=new St.BoxLayout({vertical: true, reactive: true, style_class:'popup-menu-item'});
 
@@ -329,11 +331,11 @@ const ApplicationsButton = new Lang.Class({
             }
         }
 
-        for (var counter2=shownIcons;counter2<iconsPerPage;counter2+=1) {
+        for (let counter2=shownIcons;counter2<iconsPerPage;counter2+=1) {
             let texto = new St.Label({text:" "});
             texto.width=this._iconSize;
             texto.height=this._iconSize;
-            let texto2 = new St.Label({text:" \n \n ", style_class: 'slingshot_table',width: label_width});
+            let texto2 = new St.Label({text:" \n \n ", style_class: 'slingshot_table',width: labelWidth});
             let container2=new St.BoxLayout({vertical: true, style_class:'popup-menu-item'})
             container2.add(texto, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
             container2.add(texto2, {x_fill: true, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.START});
@@ -473,7 +475,7 @@ const ApplicationsButton = new Lang.Class({
         this.searchContainer._customEventId=this.searchContainer.connect_after('realize',Lang.bind(this,this._menuSizeChanged));
         this.searchContainer._customDestroyId=this.searchContainer.connect('destroy',Lang.bind(this,this._onDestroyActor));
 
-        var iconsPerPage=this._iconsPerRow*this._iconsPerColumn;
+        let iconsPerPage=this._iconsPerRow*this._iconsPerColumn;
         if (paintCategories) {
             for (let i=0; i<this._appClass.length; i++) {
                 let dItem= this._appClass[i];
@@ -512,7 +514,7 @@ const ApplicationsButton = new Lang.Class({
         let pages=new St.BoxLayout({vertical: false});
         if (this.iconCounter>iconsPerPage) {
             this.pagesVisibleInMenu=0;
-            for (var i=0;i<=((this.iconCounter-1)/iconsPerPage);i++) {
+            for (let i=0;i<=((this.iconCounter-1)/iconsPerPage);i++) {
                 let clase='';
                 if (i==this.currentPageVisibleInMenu) {
                     clase='active';
