@@ -3,6 +3,7 @@
 const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
 
+const ShellVersion = imports.misc.config.PACKAGE_VERSION.split(".");
 const ExtensionUtils = imports.misc.extensionUtils;
 const SlingShot_App_Launcher = ExtensionUtils.getCurrentExtension();
 const Lib = SlingShot_App_Launcher.imports.lib;
@@ -21,8 +22,10 @@ function buildPrefsWidget() {
     let panel_switch = buildSwitcher('hide-activities', "Put the Activities button inside Slingshot");
     frame.add(panel_switch);
 
-    let panel_switch = buildSwitcher('disable-activities-hotspot', "Disable the Activities (top left) hotspot");
-    frame.add(panel_switch);
+    if ((ShellVersion[0]==3)&&(ShellVersion[1]<7)) {
+        let panel_switch = buildSwitcher('disable-activities-hotspot', "Disable the Activities (top left) hotspot");
+        frame.add(panel_switch);
+    }
 
     let panel_switch = buildSwitcher('show-categories', "Clasify applications in categories");
     frame.add(panel_switch);

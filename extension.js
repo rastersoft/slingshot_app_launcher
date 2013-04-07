@@ -45,6 +45,9 @@
    17: The size adjustment works again
    18: Added a RESET button for the hotkey configuration entry
    19: Allows to set the icon size
+   20: Refactorized code to better follow the Gnome coding style
+   21: Adapted to Gnome Shell 3.8 (forced to remove Disable HotSpot)
+       Now ensures that the menu is hidden when enabling Overview mode)
     
 */
 
@@ -618,6 +621,7 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _onActivitiesClick: function(actor,event) {
+        this.menu.close();
         Main.overview.show();
     },
 
@@ -772,6 +776,12 @@ const ApplicationsButton = new Lang.Class({
     },
 
     _setActivitiesNoHotspot: function(mode) {
+
+        // Can't disable hotspots on Gnome Shell 3.8 :-(
+        if ((ShellVersion[0]!=3)||(ShellVersion[1]>6)) {
+            return;
+        }
+
         if (mode) {
             if (ShellVersion[1]>4) {
                 Main.panel.statusArea['activities'].hotCorner._corner.hide();
