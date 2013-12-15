@@ -14,40 +14,42 @@
 
 /* Versions:
 
-    1: First public version
-    2: Now highlights the icons when the mouse cursor flies over them
-    3: Code much more compliant with Gnome Shell style
-    4: Fixed three forgotten "this."
-    5: Allows to move the Activities button inside the menu and
-       disable the hotspot
-    6: Packed the schemas (forgotten in version 5)
-    7: Better use of standard CSS
-       Tries to keep the size of the meny as steady as possible, by
-       tracking the maximum size used
-    8: Reduces the icon matrix when the screen is small (based on code
-       from kirby33)
-       Now doesn't show empty pages
-       Allows to customize the style of the main button (with/out icon
-       or text)
-    9: Allows to choose between categories mode or pure icon mode
-       Now highlights all the possible buttons
-   10: Keeps the window size even when changing the mode
-   11: Allows to search apps using the keyboard
-       Better appearance
-   12: Opens the menu with the Right Windows key (Left Windows key still
-       goes to Overview mode)
-   13: Right Windows key shows AND closes the menu
-   14: Improved icons
-   15: Added configuration icon
-       Only shows the SEARCH box when typing
-   16: Allows to change the main button position in the top bar
-       Allows to change the hot key for opening the menu
-   17: The size adjustment works again
-   18: Added a RESET button for the hotkey configuration entry
-   19: Allows to set the icon size
-   20: Refactorized code to better follow the Gnome coding style
-   21: Adapted to Gnome Shell 3.8 (forced to remove Disable HotSpot)
-       Now ensures that the menu is hidden when enabling Overview mode)
+     1: First public version
+     2: Now highlights the icons when the mouse cursor flies over them
+     3: Code much more compliant with Gnome Shell style
+     4: Fixed three forgotten "this."
+     5: Allows to move the Activities button inside the menu and
+        disable the hotspot
+     6: Packed the schemas (forgotten in version 5)
+     7: Better use of standard CSS
+        Tries to keep the size of the meny as steady as possible, by
+        tracking the maximum size used
+     8: Reduces the icon matrix when the screen is small (based on code
+        from kirby33)
+        Now doesn't show empty pages
+        Allows to customize the style of the main button (with/out icon
+        or text)
+     9: Allows to choose between categories mode or pure icon mode
+        Now highlights all the possible buttons
+    10: Keeps the window size even when changing the mode
+    11: Allows to search apps using the keyboard
+        Better appearance
+    12: Opens the menu with the Right Windows key (Left Windows key still
+        goes to Overview mode)
+    13: Right Windows key shows AND closes the menu
+    14: Improved icons
+    15: Added configuration icon
+        Only shows the SEARCH box when typing
+    16: Allows to change the main button position in the top bar
+        Allows to change the hot key for opening the menu
+    17: The size adjustment works again
+    18: Added a RESET button for the hotkey configuration entry
+    19: Allows to set the icon size
+    20: Refactorized code to better follow the Gnome coding style
+    21: Adapted to Gnome Shell 3.8 (forced to remove Disable HotSpot)
+        Now ensures that the menu is hidden when enabling Overview mode)
+    22: Now doesn't paint icons twice (or more) in the all-apps view (thanks
+        to Albert Palacios)
     
 */
 
@@ -300,36 +302,46 @@ const ApplicationsButton = new Lang.Class({
         if (labelWidth >120) {
             labelWidth=120;
         }
+        var paintedApps = [];
         for (let item in appList) {
-            this.iconCounter++;
-            if ((this.iconCounter>minimumCounter)&&(this.iconCounter<=maximumCounter)) {
-                shownIcons++;
-                let app=appList[item];
-                let icon = app.create_icon_texture(this._iconSize);
-                let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table',width: labelWidth});
+            let appId = appList[item].get_id();
+            var notInList = true;
+            for (let ni in paintedApps) {
+            	if (paintedApps[ni] == appId) {
+            		notInList=false;
+            	}
+            }
+            if (notInList) {
+                paintedApps.push(appId);
+                this.iconCounter++;
+                if ((this.iconCounter>minimumCounter)&&(this.iconCounter<=maximumCounter)) {
+                    shownIcons++;
+                    let app = appList[item];
+                    let icon = app.create_icon_texture(this._iconSize);
+                    let texto = new St.Label({text:app.get_name(), style_class: 'slingshot_table',width: labelWidth});
 
-                let container2=new St.BoxLayout({vertical: true, reactive: true, style_class:'popup-menu-item'});
+                    let container2=new St.BoxLayout({vertical: true, reactive: true, style_class:'popup-menu-item'});
 
-                texto.clutter_text.line_wrap_mode = Pango.WrapMode.WORD;
-                texto.clutter_text.line_wrap = true;
-                //texto.clutter_text.line_ellipsize_mode = Pango.EllipsizeMode.END;
+                    texto.clutter_text.line_wrap_mode = Pango.WrapMode.WORD;
+                    texto.clutter_text.line_wrap = true;
 
-                container2.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
-                container2.add(texto, {x_fill: true, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.START});
-                container2._app=app;
-                container2._customEventId=container2.connect('button-release-event',Lang.bind(this,this._onAppClick));
-                container2._customEnterId=container2.connect('enter-event',Lang.bind(this,this._onAppEnter));
-                container2._customLeaveId=container2.connect('leave-event',Lang.bind(this,this._onAppLeave));
-                container2._customDestroyId=container2.connect('destroy',Lang.bind(this,this._onAppDestroy));
-                container2._customPseudoClassActive='active';
-                container2._customPseudoClassInactive='';
+                    container2.add(icon, {x_fill: false, y_fill: false,x_align: St.Align.MIDDLE, y_align: St.Align.START});
+                    container2.add(texto, {x_fill: true, y_fill: true,x_align: St.Align.MIDDLE, y_align: St.Align.START});
+                    container2._app=app;
+                    container2._customEventId=container2.connect('button-release-event',Lang.bind(this,this._onAppClick));
+                    container2._customEnterId=container2.connect('enter-event',Lang.bind(this,this._onAppEnter));
+                    container2._customLeaveId=container2.connect('leave-event',Lang.bind(this,this._onAppLeave));
+                    container2._customDestroyId=container2.connect('destroy',Lang.bind(this,this._onAppDestroy));
+                    container2._customPseudoClassActive='active';
+                    container2._customPseudoClassInactive='';
 
-                container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
+                    container.add(container2, { row: this.posy, col: this.posx, x_fill: false, y_fill: false, x_align: St.Align.MIDDLE, y_align: St.Align.START});
 
-                this.posx++;
-                if (this.posx==width) {
-                    this.posx=0;
-                    this.posy++;
+                    this.posx++;
+                    if (this.posx==width) {
+                        this.posx=0;
+                        this.posy++;
+                    }
                 }
             }
         }

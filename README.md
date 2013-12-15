@@ -39,6 +39,8 @@ History of versions:
     19: Allows to set the icon size
     20: Some cosmetic changes in the source code
     21: Gnome Shell 3.8 support
+    22: Now doesn't paint icons twice (or more) in the all-apps view (thanks
+        to Albert Palacios)
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
