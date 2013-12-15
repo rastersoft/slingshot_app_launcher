@@ -37,6 +37,8 @@ History of versions:
     17: The size adjustment works again
     18: Added a RESET button for the hotkey configuration entry
     19: Allows to set the icon size
+    20: Some cosmetic changes in the source code
+    21: Gnome Shell 3.8 support
 
 Created by Raster Software Vigo (rastersoft)
 http://www.rastersoft.com
