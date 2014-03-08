@@ -82,7 +82,11 @@ const SlingShotItem = new Lang.Class({
         this.parent(params);
 
         this._app = app;
-        this.addActor(container);
+        if (ShellVersion[1]>8) {
+            this.actor.add_child(container);
+        } else {
+            this.addActor(container);
+        }
     }
 });
 
@@ -307,9 +311,10 @@ const ApplicationsButton = new Lang.Class({
             let appId = appList[item].get_id();
             var notInList = true;
             for (let ni in paintedApps) {
-            	if (paintedApps[ni] == appId) {
-            		notInList=false;
-            	}
+                if (paintedApps[ni] == appId) {
+                    notInList=false;
+                    break;
+                }
             }
             if (notInList) {
                 paintedApps.push(appId);
