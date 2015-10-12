@@ -246,7 +246,8 @@ const ApplicationsButton = new Lang.Class({
         this._appList=[];
         this._appClass=[];
 
-        let tree = this._appSys.get_tree();
+        let tree = new GMenu.Tree({ menu_basename: 'applications.menu' });
+        tree.load_sync();
         let root = tree.get_root_directory();
 
         let iter = root.iter();
@@ -276,7 +277,7 @@ const ApplicationsButton = new Lang.Class({
             if (nextType == GMenu.TreeItemType.ENTRY) {
                 let entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
-                    let app = this._appSys.lookup_app_by_tree_entry(entry);
+                    let app = this._appSys.lookup_app(entry.get_desktop_file_id());
                     childrens.push(app);
                     this._appList.push(app);
                 }
